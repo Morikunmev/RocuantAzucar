@@ -1,21 +1,23 @@
 import { Router } from "express";
+import {
+  createTask,
+  deleteTask,
+  getAllTasks,
+  getTask,
+  updateTask,
+} from "../controllers/tasks.controller.js";
+
 const router = Router();
-router.get("/tasks", (req, res) => {
-  res.send("Obteniendo tareas");
-});
-router.get("/tasks/:id", (req, res) => {
-  res.send("Obteniendo tarea con id " + req.params.id);
-});
 
-router.post("/tasks", (req, res) => {
-  res.send("Creando tarea");
-});
+// Forma correcta: pasar la función como manejador
+router.get("/tasks", getAllTasks);
 
-router.put("/tasks/:id", (req, res) => {
-  res.send("Actualizando tarea con id " + req.params.id);
-});
+router.get("/tasks/:id", getTask);
 
-router.delete("/tasks/:id", (req, res) => {
-  res.send("Eliminando tarea con id " + req.params.id);
-});
+router.post("/tasks", createTask);
+
+router.put("/tasks/:id", updateTask);
+
+router.delete("/tasks/:id", deleteTask);
+
 export default router;
