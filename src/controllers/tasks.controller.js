@@ -1,6 +1,9 @@
 import { pool } from "../db.js";
 
-export const getAllTasks = (req, res) => res.send("Obteniendo tareas");
+export const getAllTasks = async (req, res, next) => {
+  const result = await pool.query("SELECT * FROM task");
+  return res.json(result.rows);
+};
 export const getTask = (req, res) => res.send("Obteniendo tarea unica");
 
 export const createTask = async (req, res, next) => {
@@ -13,7 +16,9 @@ export const createTask = async (req, res, next) => {
     res.json(result.rows[0]);
   } catch (error) {
     if (error.code === "23505") {
-      return res.status(400).send("Ya existe una tarea con ese titulo");
+      return res.status(409).json({
+        message: "Ya existe una tarea con ese titulo",
+      });
     }
     next(error);
   }
