@@ -32,6 +32,29 @@ export const createTask = async (req, res, next) => {
   }
 };
 
-export const updateTask = (req, res) => res.send("Actualizando tarea unica");
+export const updateTask = async (req, res) => {
+  const id = req.params.id;
+  const { title, description } = req.body;
+  const result = await pool.query(
+    "UPDATE task SET title = $1, description = $2 WHERE id = $3 RETURNING *",
+    [title, description, id]
+  );
+  if (result.rowCount === 0) {
+    return res.status(404).json({
+      message: "No existe una tarea con ese id",
+    });
+  }
+  return res.json(result.rows[0]);
+};
 
-export const deleteTask = (req, res) => res.send("Eliminando tarea unica");
+export const deleteTask = async (req, res) => {
+  const result = await pool.query("DELETE FROM task WHERE id = $1", [
+    req.params.id,
+  ]);
+  if (result.rowCount === 0) {
+    return res.status(404).json({
+      message: "No existe una tarea con ese id",
+    });
+  }
+  return res.sendStatus(204);
+};
