@@ -6,18 +6,17 @@ import {
   getTask,
   updateTask,
 } from "../controllers/tasks.controller.js";
-
+import { isAuth } from "../middlewares/auth.middleware.js";
 const router = Router();
 
-// Forma correcta: pasar la función como manejador
-router.get("/tasks", getAllTasks);
+router.get("/tasks", isAuth, getAllTasks);
 
-router.get("/tasks/:id", getTask);
+router.get("/tasks/:id", isAuth, getTask);
 
-router.post("/tasks", createTask);
+router.post("/tasks", isAuth, createTask);
 
-router.put("/tasks/:id", updateTask);
+router.put("/tasks/:id", isAuth, updateTask);
 
-router.delete("/tasks/:id", deleteTask);
+router.delete("/tasks/:id", isAuth, deleteTask);
 
 export default router;
