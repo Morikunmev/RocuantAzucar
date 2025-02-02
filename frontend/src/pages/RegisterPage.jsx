@@ -1,57 +1,91 @@
-import { Button, Card, Input } from "../components/ui";
+import { Button, Card, Input, Label } from "../components/ui";
 import { useForm } from "react-hook-form";
 import axios from "axios";
+import { Link } from "react-router-dom";
+
 function RegisterPage() {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-  {
-    /* {
-    onChange
-    name
-    value
-  } */
-  }
+
   const onSubmit = handleSubmit(async (data) => {
     const res = await axios.post("http://localhost:3000/api/signup", data, {
       withCredentials: true,
     });
     console.log(res);
   });
-  console.log(errors);
+
   return (
-    <div className="h-[calc(100vh-64px)] flex items-center justify-center">
+    <div className="h-screen flex justify-center items-center bg-gradient-to-b from-amber-800 to-amber-600 bg-cover bg-center">
       <Card>
-        <h3 className="text-2xl font-bold text-yellow-600">Register</h3>
-        <form onSubmit={onSubmit}>
+        <h1 className="text-3xl font-bold mb-8 text-center text-amber-800">
+          Registro
+        </h1>
+
+        <form onSubmit={onSubmit} className="flex flex-col gap-4">
+          <Label htmlFor="name" className="text-amber-700">
+            Nombre completo
+          </Label>
           <Input
-            placeholder="Enter your fullname"
+            id="name"
+            type="text"
+            placeholder="Ingresa tu nombre"
+            className="h-12 px-4 rounded-lg border border-amber-200 focus:border-amber-500 transition-colors bg-amber-50 text-gray-800 placeholder:text-amber-300"
             {...register("name", {
               required: true,
             })}
           />
-          {errors.name && <p className="text-red-600">Fullname is required</p>}
+          {errors.name && (
+            <p className="text-red-500 text-sm">El nombre es requerido</p>
+          )}
+
+          <Label htmlFor="email" className="text-amber-700">
+            Email
+          </Label>
           <Input
+            id="email"
             type="email"
-            placeholder="Enter your email"
+            placeholder="Ingresa tu email"
+            className="h-12 px-4 rounded-lg border border-amber-200 focus:border-amber-500 transition-colors bg-amber-50 text-gray-800 placeholder:text-amber-300"
             {...register("email", {
               required: true,
             })}
           />
-          {errors.email && <p className="text-red-600">Email is required</p>}
+          {errors.email && (
+            <p className="text-red-500 text-sm">El email es requerido</p>
+          )}
+
+          <Label htmlFor="password" className="text-amber-700">
+            Contraseña
+          </Label>
           <Input
+            id="password"
             type="password"
-            placeholder="Enter your password"
+            placeholder="Ingresa tu contraseña"
+            className="h-12 px-4 rounded-lg border border-amber-200 focus:border-amber-500 transition-colors bg-amber-50 text-gray-800 placeholder:text-amber-300"
             {...register("password", {
               required: true,
             })}
           />
           {errors.password && (
-            <p className="text-red-600">Password is required</p>
+            <p className="text-red-500 text-sm">La contraseña es requerida</p>
           )}
-          <Button>Register</Button>
+
+          <Button className="bg-gray-900 hover:bg-gray-800 text-white h-12 mt-4 rounded-lg transition-colors w-full font-medium">
+            Registrarse
+          </Button>
+
+          <div className="flex justify-center gap-2 mt-4 text-sm">
+            <p className="text-amber-700">¿Ya tienes una cuenta?</p>
+            <Link
+              to="/login"
+              className="font-semibold text-amber-600 hover:text-amber-800"
+            >
+              Iniciar Sesión
+            </Link>
+          </div>
         </form>
       </Card>
     </div>
