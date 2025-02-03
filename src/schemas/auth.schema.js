@@ -18,7 +18,9 @@ export const signupSchema = z.object({
       required_error: "El nombre es requerido",
       invalid_type_error: "El password debe ser un texto",
     })
-    .min(6)
+    .min(6,{
+        message:"La contraseña debe tener al menos 6 caracteres"
+    })
     .max(255),
 });
 export const signinSchema = z.object({

@@ -3,21 +3,24 @@ import { Card, Input, Button, Label } from "../components/ui";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 function LoginPage() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
-  const { signin } = useAuth();
+  const { register, handleSubmit } = useForm();
+  const { signin, errors } = useAuth();
   const navigate = useNavigate();
+
   const onSubmit = handleSubmit(async (data) => {
-    await signin(data);
-    navigate("/profile");
+    const user = await signin(data);
+    if (user) {
+      navigate("/profile");
+    }
   });
 
   return (
     <div className="h-screen flex justify-center items-center bg-gradient-to-b from-amber-800 to-amber-600 bg-cover bg-center">
       <Card>
+        {errors &&
+          errors.map((err) => (
+            <p className="bg-red-500 text-white p-2 text-center">{err}</p>
+          ))}
         <h1 className="text-3xl font-bold mb-8 text-center text-amber-800">
           Iniciar sesión
         </h1>
@@ -34,9 +37,6 @@ function LoginPage() {
               required: true,
             })}
           />
-          {errors.email && (
-            <p className="text-red-500 text-sm">El email es requerido</p>
-          )}
 
           <Label htmlFor="password" className="text-amber-700">
             Password
@@ -50,9 +50,6 @@ function LoginPage() {
               required: true,
             })}
           />
-          {errors.password && (
-            <p className="text-red-500 text-sm">La contraseña es requerida</p>
-          )}
 
           <Button className="bg-gray-900 hover:bg-gray-800 text-white h-12 mt-4 rounded-lg transition-colors w-full font-medium">
             Iniciar sesión

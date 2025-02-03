@@ -9,17 +9,23 @@ function RegisterPage() {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const { signup } = useAuth();
+  const { signup, errors: signupErrors } = useAuth();
   const navigate = useNavigate();
 
   const onSubmit = handleSubmit(async (data) => {
-    await signup(data);
-    navigate("/profile");
+    const user = await signup(data);
+    if (user) {
+      navigate("/profile");
+    }
   });
 
   return (
     <div className="h-screen flex justify-center items-center bg-gradient-to-b from-amber-800 to-amber-600 bg-cover bg-center">
       <Card>
+        {signupErrors &&
+          signupErrors.map((err) => (
+            <p className="bg-red-500 text-white p-2 text-center">{err}</p>
+          ))}
         <h1 className="text-3xl font-bold mb-8 text-center text-amber-800">
           Registro
         </h1>
