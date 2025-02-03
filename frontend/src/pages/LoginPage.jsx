@@ -1,24 +1,18 @@
 import { useForm } from "react-hook-form";
 import { Card, Input, Button, Label } from "../components/ui";
-import { Link } from "react-router-dom";
-import axios from "axios";
-
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 function LoginPage() {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-
+  const { signin } = useAuth();
+  const navigate = useNavigate();
   const onSubmit = handleSubmit(async (data) => {
-    try {
-      const res = await axios.post("http://localhost:3000/api/signin", data, {
-        withCredentials: true,
-      });
-      console.log(res);
-    } catch (error) { 
-      console.log(error);
-    }
+    await signin(data);
+    navigate("/profile");
   });
 
   return (
