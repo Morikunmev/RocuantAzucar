@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { Card, Input, Button, Label } from "../components/ui";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
 function LoginPage() {
   const { register, handleSubmit } = useForm();
   const { signin, errors } = useAuth();
@@ -15,11 +16,13 @@ function LoginPage() {
   });
 
   return (
-    <div className="h-screen flex justify-center items-center bg-gradient-to-b from-amber-800 to-amber-600 bg-cover bg-center">
+    <div className="min-h-screen pt-[76px] flex justify-center items-center bg-gradient-to-b from-amber-800 to-amber-600">
       <Card>
         {errors &&
           errors.map((err) => (
-            <p className="bg-red-500 text-white p-2 text-center">{err}</p>
+            <p key={err} className="bg-red-500 text-white p-2 text-center">
+              {err}
+            </p>
           ))}
         <h1 className="text-3xl font-bold mb-8 text-center text-amber-800">
           Iniciar sesión
@@ -68,5 +71,4 @@ function LoginPage() {
     </div>
   );
 }
-
 export default LoginPage;

@@ -20,11 +20,13 @@ function RegisterPage() {
   });
 
   return (
-    <div className="h-screen flex justify-center items-center bg-gradient-to-b from-amber-800 to-amber-600 bg-cover bg-center">
+    <div className="min-h-screen pt-[76px] flex justify-center items-center bg-gradient-to-b from-amber-800 to-amber-600">
       <Card>
         {signupErrors &&
           signupErrors.map((err) => (
-            <p className="bg-red-500 text-white p-2 text-center">{err}</p>
+            <p key={err} className="bg-red-500 text-white p-2 text-center">
+              {err}
+            </p>
           ))}
         <h1 className="text-3xl font-bold mb-8 text-center text-amber-800">
           Registro
