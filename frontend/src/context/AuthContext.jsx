@@ -48,6 +48,11 @@ export function AuthProvider({ children }) {
       setErrors([error.response.data.message]);
     }
   };
+  const signout = async () => {
+    await axios.post("/signout");
+    setUser(null);
+    setIsAuth(false);
+  };
 
   useEffect(() => {
     // Intentar obtener el perfil al cargar
@@ -75,6 +80,7 @@ export function AuthProvider({ children }) {
         loading,
         signup,
         signin,
+        signout,
       }}
     >
       {children}
