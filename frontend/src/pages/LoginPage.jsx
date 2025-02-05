@@ -16,54 +16,55 @@ function LoginPage() {
   });
 
   return (
-    <div className="min-h-screen pt-[76px] flex justify-center items-center bg-gradient-to-b from-amber-800 to-amber-600">
-      <Card>
+    <div className="min-h-screen flex justify-center items-center bg-gradient-to-b from-amber-700 to-amber-600">
+      <Card className="bg-amber-500 p-8 rounded-xl w-96">
         {errors &&
           errors.map((err) => (
-            <p key={err} className="bg-red-500 text-white p-2 text-center">
+            <p
+              key={err}
+              className="bg-red-500 text-white p-2 text-center mb-4 rounded"
+            >
               {err}
             </p>
           ))}
-        <h1 className="text-3xl font-bold mb-8 text-center text-amber-800">
+        <h1 className="text-4xl font-bold mb-8 text-center text-gray-900">
           Iniciar sesión
         </h1>
-        <form onSubmit={onSubmit} className="flex flex-col gap-4">
-          <Label htmlFor="email" className="text-amber-700">
-            Email
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Email"
-            className="h-12 px-4 rounded-lg border border-amber-200 focus:border-amber-500 transition-colors bg-amber-50 text-gray-800 placeholder:text-amber-300"
-            {...register("email", {
-              required: true,
-            })}
-          />
+        <form onSubmit={onSubmit} className="flex flex-col gap-6">
+          <div>
+            <Label htmlFor="email" className="text-gray-900 text-lg">
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Email"
+              className="h-12 w-full bg-amber-300/50 rounded-lg text-gray-900 placeholder-amber-600/50"
+              {...register("email", { required: true })}
+            />
+          </div>
 
-          <Label htmlFor="password" className="text-amber-700">
-            Password
-          </Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Password"
-            className="h-12 px-4 rounded-lg border border-amber-200 focus:border-amber-500 transition-colors bg-amber-50 text-gray-800 placeholder:text-amber-300"
-            {...register("password", {
-              required: true,
-            })}
-          />
+          <div>
+            <Label htmlFor="password" className="text-gray-900 text-lg">
+              Password
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Password"
+              className="h-12 w-full bg-amber-300/50 rounded-lg text-gray-900 placeholder-amber-600/50"
+              {...register("password", { required: true })}
+            />
+          </div>
 
-          <Button className="bg-gray-900 hover:bg-gray-800 text-white h-12 mt-4 rounded-lg transition-colors w-full font-medium">
+          <Button className="bg-amber-600 hover:bg-amber-700 text-white h-12 rounded-lg w-full text-lg font-medium mt-4">
             Iniciar sesión
           </Button>
-          <div className="flex justify-center gap-2 mt-4 text-sm">
-            <p className="text-amber-700">¿No tienes una cuenta?</p>
-            <Link
-              to="/register"
-              className="font-semibold text-amber-600 hover:text-amber-800"
-            >
-              Regístrate
+
+          <div className="flex justify-center gap-2 text-gray-900">
+            <span>¿No tienes una cuenta?</span>
+            <Link to="/register" className="font-medium hover:text-amber-800">
+              Crear cuenta
             </Link>
           </div>
         </form>

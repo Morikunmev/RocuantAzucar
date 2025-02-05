@@ -20,77 +20,87 @@ function RegisterPage() {
   });
 
   return (
-    <div className="min-h-screen pt-[76px] flex justify-center items-center bg-gradient-to-b from-amber-800 to-amber-600">
-      <Card>
+    <div className="min-h-screen flex justify-center items-center bg-gradient-to-b from-amber-700 to-amber-600">
+      <Card className="bg-amber-500 p-8 rounded-xl w-96">
         {signupErrors &&
           signupErrors.map((err) => (
-            <p key={err} className="bg-red-500 text-white p-2 text-center">
+            <p
+              key={err}
+              className="bg-red-500 text-white p-2 text-center mb-4 rounded"
+            >
               {err}
             </p>
           ))}
-        <h1 className="text-3xl font-bold mb-8 text-center text-amber-800">
+        <h1 className="text-4xl font-bold mb-8 text-center text-gray-900">
           Registro
         </h1>
 
-        <form onSubmit={onSubmit} className="flex flex-col gap-4">
-          <Label htmlFor="name" className="text-amber-700">
-            Nombre completo
-          </Label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Ingresa tu nombre"
-            className="h-12 px-4 rounded-lg border border-amber-200 focus:border-amber-500 transition-colors bg-amber-50 text-gray-800 placeholder:text-amber-300"
-            {...register("name", {
-              required: true,
-            })}
-          />
-          {errors.name && (
-            <p className="text-red-500 text-sm">El nombre es requerido</p>
-          )}
+        <form onSubmit={onSubmit} className="flex flex-col gap-6">
+          <div>
+            <Label htmlFor="name" className="text-gray-900 text-lg">
+              Nombre completo
+            </Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Ingresa tu nombre"
+              className="h-12 w-full bg-amber-300/50 rounded-lg text-gray-900 placeholder-amber-600/50"
+              {...register("name", {
+                required: true,
+              })}
+            />
+            {errors.name && (
+              <p className="text-red-700 text-sm mt-1">
+                El nombre es requerido
+              </p>
+            )}
+          </div>
 
-          <Label htmlFor="email" className="text-amber-700">
-            Email
-          </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Ingresa tu email"
-            className="h-12 px-4 rounded-lg border border-amber-200 focus:border-amber-500 transition-colors bg-amber-50 text-gray-800 placeholder:text-amber-300"
-            {...register("email", {
-              required: true,
-            })}
-          />
-          {errors.email && (
-            <p className="text-red-500 text-sm">El email es requerido</p>
-          )}
+          <div>
+            <Label htmlFor="email" className="text-gray-900 text-lg">
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Ingresa tu email"
+              className="h-12 w-full bg-amber-300/50 rounded-lg text-gray-900 placeholder-amber-600/50"
+              {...register("email", {
+                required: true,
+              })}
+            />
+            {errors.email && (
+              <p className="text-red-700 text-sm mt-1">El email es requerido</p>
+            )}
+          </div>
 
-          <Label htmlFor="password" className="text-amber-700">
-            Contraseña
-          </Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Ingresa tu contraseña"
-            className="h-12 px-4 rounded-lg border border-amber-200 focus:border-amber-500 transition-colors bg-amber-50 text-gray-800 placeholder:text-amber-300"
-            {...register("password", {
-              required: true,
-            })}
-          />
-          {errors.password && (
-            <p className="text-red-500 text-sm">La contraseña es requerida</p>
-          )}
+          <div>
+            <Label htmlFor="password" className="text-gray-900 text-lg">
+              Contraseña
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Ingresa tu contraseña"
+              className="h-12 w-full bg-amber-300/50 rounded-lg text-gray-900 placeholder-amber-600/50"
+              {...register("password", {
+                required: true,
+              })}
+            />
+            {errors.password && (
+              <p className="text-red-700 text-sm mt-1">
+                La contraseña es requerida
+              </p>
+            )}
+          </div>
 
-          <Button className="bg-gray-900 hover:bg-gray-800 text-white h-12 mt-4 rounded-lg transition-colors w-full font-medium">
+          <Button className="bg-amber-600 hover:bg-amber-700 text-white h-12 rounded-lg w-full text-lg font-medium mt-4">
             Registrarse
           </Button>
 
-          <div className="flex justify-center gap-2 mt-4 text-sm">
-            <p className="text-amber-700">¿Ya tienes una cuenta?</p>
-            <Link
-              to="/login"
-              className="font-semibold text-amber-600 hover:text-amber-800"
-            >
+          <div className="flex justify-center gap-2 text-gray-900">
+            <span>¿Ya tienes una cuenta?</span>
+            <Link to="/login" className="font-medium hover:text-amber-800">
               Iniciar Sesión
             </Link>
           </div>
