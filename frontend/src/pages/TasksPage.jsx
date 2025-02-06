@@ -1,14 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { getAllTasksRequest } from "../api/tasks.api";
 import TaskCard from "../components/tasks/TaskCard";
+import { useTasks } from "../context/TaskContext";
 
 function TasksPage() {
-  const [tasks, setTasks] = useState([]);
+  const { tasks, loadTasks } = useTasks();
   useEffect(() => {
-    getAllTasksRequest().then((response) => {
-      setTasks(response.data);
-      console.log(response.data);
-    });
+    loadTasks();
   }, []);
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-8">

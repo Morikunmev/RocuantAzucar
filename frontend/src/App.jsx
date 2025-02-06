@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Outlet } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import Navbar from "./components/navbar/Navbar";
 import { Container } from "./components/ui";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { TaskProvider } from "./context/TaskContext";
 
 function App() {
   const { isAuth } = useAuth();
@@ -31,12 +32,19 @@ function App() {
           <Route
             element={<ProtectedRoute isAllowed={isAuth} redirectTo="/login" />}
           >
-            <Route path="/tasks" element={<TasksPage />} />
-            <Route path="/tasks/new" element={<TaskFormPage />} />
-            <Route path="/tasks/1/edit" element={<TaskFormPage />} />
+            <Route
+              element={
+                <TaskProvider>
+                  <Outlet />
+                </TaskProvider>
+              }
+            >
+              <Route path="/tasks" element={<TasksPage />} />
+              <Route path="/tasks/new" element={<TaskFormPage />} />
+              <Route path="/tasks/:id/edit" element={<TaskFormPage />} />
+            </Route>
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
-
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Container>
