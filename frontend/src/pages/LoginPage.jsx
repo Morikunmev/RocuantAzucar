@@ -1,7 +1,8 @@
 import { useForm } from "react-hook-form";
-import { Card, Input, Button, Label } from "../components/ui";
-import { Link, useNavigate } from "react-router-dom";
+import { Card, Input, Button } from "../components/ui";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import imagen from "../assets/fondoazucar.jpeg";
 
 function LoginPage() {
   const {
@@ -20,64 +21,73 @@ function LoginPage() {
   });
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gradient-to-b from-amber-700 to-amber-600">
-      <Card className="bg-amber-500 p-8 rounded-xl w-96">
+    <div
+      className="min-h-screen flex justify-center items-center bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: `url(${imagen})`, // Cambiado aquí
+        backgroundColor: "rgba(0,0,0,0.5)",
+        backgroundBlend: "overlay",
+      }}
+    >
+      <Card className="w-96 p-8 bg-black/40 backdrop-blur-sm border border-gray-700">
         {loginErrors &&
           loginErrors.map((err) => (
-            <p
-              key={err}
-              className="bg-red-500 text-white p-2 text-center mb-4 rounded"
-            >
+            <p key={err} className="text-red-400 text-sm text-center mb-4">
               {err}
             </p>
           ))}
-        <h1 className="text-4xl font-bold mb-8 text-center text-gray-900">
-          Iniciar sesión
-        </h1>
-        <form onSubmit={onSubmit} className="flex flex-col gap-6">
-          <div>
-            <Label htmlFor="email" className="text-gray-900 text-lg">
-              Email
-            </Label>
+
+        <h2 className="text-3xl font-normal text-gray-200 mb-8 text-center">
+          Log In
+        </h2>
+
+        <form onSubmit={onSubmit} className="space-y-5">
+          <div className="relative">
             <Input
               id="email"
               type="email"
-              placeholder="Email"
-              className="h-12 w-full bg-amber-300/50 rounded-lg text-gray-900 placeholder-amber-600/50"
+              placeholder="E-mail"
+              className="w-full h-11 bg-black/30 border-0 rounded text-gray-300 placeholder-gray-500 focus:ring-1 focus:ring-gray-500"
               {...register("email", { required: true })}
             />
+            {errors.email && (
+              <p className="text-red-400 text-xs mt-1">Email is required</p>
+            )}
           </div>
-          {errors.email && <p className="text-red-500">Email is required</p>}
 
-          <div>
-            <Label htmlFor="password" className="text-gray-900 text-lg">
-              Password
-            </Label>
+          <div className="relative">
             <Input
               id="password"
               type="password"
               placeholder="Password"
-              className="h-12 w-full bg-amber-300/50 rounded-lg text-gray-900 placeholder-amber-600/50"
+              className="w-full h-11 bg-black/30 border-0 rounded text-gray-300 placeholder-gray-500 focus:ring-1 focus:ring-gray-500"
               {...register("password", { required: true })}
             />
             {errors.password && (
-              <p className="text-red-500">Password is required</p>
+              <p className="text-red-400 text-xs mt-1">Password is required</p>
             )}
           </div>
 
-          <Button className="bg-amber-600 hover:bg-amber-700 text-white h-12 rounded-lg w-full text-lg font-medium mt-4">
-            Iniciar sesión
-          </Button>
-
-          <div className="flex justify-center gap-2 text-gray-900">
-            <span>¿No tienes una cuenta?</span>
-            <Link to="/register" className="font-medium hover:text-amber-800">
-              Crear cuenta
-            </Link>
+          <div className="flex items-center justify-between text-sm text-gray-400">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="remember"
+                className="w-4 h-4 bg-black/30 border-gray-600 rounded focus:ring-0"
+              />
+              <label htmlFor="remember" className="ml-2">
+                Remember me
+              </label>
+            </div>
           </div>
+
+          <Button className="w-full h-11 bg-green-700 hover:bg-green-600 text-white font-medium rounded transition-colors">
+            Log In
+          </Button>
         </form>
       </Card>
     </div>
   );
 }
+
 export default LoginPage;

@@ -33,21 +33,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const signup = async (data) => {
-    try {
-      setErrors(null);
-      const res = await axios.post("/signup", data);
-      setUser(res.data);
-      setIsAuth(true);
-      return res.data;
-    } catch (error) {
-      console.log(error);
-      if (Array.isArray(error.response.data)) {
-        return setErrors(error.response.data);
-      }
-      setErrors([error.response.data.message]);
-    }
-  };
   const signout = async () => {
     await axios.post("/signout");
     setUser(null);
@@ -70,6 +55,7 @@ export function AuthProvider({ children }) {
         setLoading(false);
       });
   }, []);
+
   useEffect(() => {
     const clean = setTimeout(() => {
       setErrors(null);
@@ -84,7 +70,6 @@ export function AuthProvider({ children }) {
         isAuth,
         errors,
         loading,
-        signup,
         signin,
         signout,
       }}
