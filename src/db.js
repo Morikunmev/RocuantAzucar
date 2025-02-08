@@ -1,10 +1,11 @@
+import { PG_DATABASE, PG_HOST, PG_PASSWORD, PG_PORT, PG_USER } from "./config";
 import pg from "pg";
 export const pool = new pg.Pool({
-  port: 5432,
-  host: "localhost",
-  user: "postgres",
-  password: "xlgricky20131415",
-  database: "tasksdb", // Nombre correcto de la propiedad
+  port: PG_PORT,
+  host: PG_HOST,
+  user: PG_USER,
+  password: PG_PASSWORD,
+  database: PG_DATABASE, // Nombre correcto de la propiedad
 });
 pool.on("connect", () => {
   console.log("Database connection established");

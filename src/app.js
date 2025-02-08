@@ -5,12 +5,13 @@ import cors from "cors";
 
 import taskRoutes from "./routes/tasks.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import { ORIGIN } from "./config.js";
 const app = express();
 //Middlewares
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    credentials: true,  
+    origin: ORIGIN,
+    credentials: true,
   })
 );
 app.use(morgan("dev"));
