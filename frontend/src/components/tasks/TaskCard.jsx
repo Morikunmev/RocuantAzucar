@@ -1,6 +1,9 @@
 import { Card, Button } from "../ui";
 import { useTasks } from "../../context/TaskContext";
 import { useNavigate } from "react-router-dom";
+import { BiPencil } from "react-icons/bi";
+import { PiTrash } from "react-icons/pi";
+
 function TaskCard({ task }) {
   const { deleteTask } = useTasks();
   const navigate = useNavigate();
@@ -16,19 +19,21 @@ function TaskCard({ task }) {
         </div>
         <div className="flex gap-2 mt-4">
           <Button
-            className="flex-1 text-white bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg font-medium transition-colors"
+            className="flex-1 text-white bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             onClick={() => navigate(`/tasks/${task.id}/edit`)}
           >
+            <BiPencil className="text-lg" />
             Editar
           </Button>
           <Button
-            className="flex-1 text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg font-medium transition-colors"
+            className="flex-1 text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
             onClick={async () => {
               if (window.confirm("Estas seguro de eliminar esta tarea?")) {
                 deleteTask(task.id);
               }
             }}
           >
+            <PiTrash className="text-lg" />
             Eliminar
           </Button>
         </div>

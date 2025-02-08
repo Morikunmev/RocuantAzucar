@@ -70,6 +70,12 @@ export function AuthProvider({ children }) {
         setLoading(false);
       });
   }, []);
+  useEffect(() => {
+    const clean = setTimeout(() => {
+      setErrors(null);
+    }, 3000);
+    return () => clearTimeout(clean);
+  }, [errors]);
 
   return (
     <AuthContext.Provider

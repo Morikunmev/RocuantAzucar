@@ -4,22 +4,26 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
-  const { register, handleSubmit } = useForm();
-  const { signin, errors } = useAuth();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  const { signin, errors: loginErrors } = useAuth();
   const navigate = useNavigate();
 
   const onSubmit = handleSubmit(async (data) => {
     const user = await signin(data);
     if (user) {
-      navigate("/profile");
+      navigate("/tasks");
     }
   });
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gradient-to-b from-amber-700 to-amber-600">
       <Card className="bg-amber-500 p-8 rounded-xl w-96">
-        {errors &&
-          errors.map((err) => (
+        {loginErrors &&
+          loginErrors.map((err) => (
             <p
               key={err}
               className="bg-red-500 text-white p-2 text-center mb-4 rounded"
@@ -43,6 +47,7 @@ function LoginPage() {
               {...register("email", { required: true })}
             />
           </div>
+          {errors.email && <p className="text-red-500">Email is required</p>}
 
           <div>
             <Label htmlFor="password" className="text-gray-900 text-lg">
@@ -55,6 +60,9 @@ function LoginPage() {
               className="h-12 w-full bg-amber-300/50 rounded-lg text-gray-900 placeholder-amber-600/50"
               {...register("password", { required: true })}
             />
+            {errors.password && (
+              <p className="text-red-500">Password is required</p>
+            )}
           </div>
 
           <Button className="bg-amber-600 hover:bg-amber-700 text-white h-12 rounded-lg w-full text-lg font-medium mt-4">

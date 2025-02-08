@@ -23,7 +23,6 @@ function App() {
           <Route
             element={<ProtectedRoute isAllowed={!isAuth} redirectTo="/tasks" />}
           >
-            <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
@@ -32,6 +31,7 @@ function App() {
           <Route
             element={<ProtectedRoute isAllowed={isAuth} redirectTo="/login" />}
           >
+            <Route path="/" element={<HomePage />} /> {/* Mover aquí */}
             <Route
               element={
                 <TaskProvider>
