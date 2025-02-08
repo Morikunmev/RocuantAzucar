@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { Card, Input, Textarea, Label, Button } from "../components/ui";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTasks } from "../context/TaskContext";
 
 function TaskFormPage() {
@@ -9,27 +9,42 @@ function TaskFormPage() {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm();
-  const [postError, setPostError] = useState([]);
   const navigate = useNavigate();
-  const { createTask } = useTasks();
+  const { createTask, updateTask, loadTask, errors: tasksErrors } = useTasks();
+  const params = useParams();
 
   const onSubmit = handleSubmit(async (data) => {
-    const task = await createTask(data);
+    let task;
+    if (!params.id) {
+      task = await createTask(data);
+    } else {
+      task = await updateTask(params.id, data);
+    }
+
     if (task) {
       navigate("/tasks");
     }
   });
+  useEffect(() => {
+    if (params.id) {
+      loadTask(params.id).then((task) => {
+        setValue("title", task.title);
+        setValue("description", task.description);
+      });
+    }
+  }, []);
   return (
     <div className="flex h-[80vh] justify-center items-center">
       <Card className="bg-amber-400/80 p-8 shadow-amber-500/50 w-[400px]">
-        {postError.map((error, i) => (
+        {tasksErrors.map((error, i) => (
           <p className="text-red-500" key={i}>
             {error}
           </p>
         ))}
         <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-          Create Task
+          {params.id ? "Edit task" : "Create task"}
         </h2>
         <form onSubmit={onSubmit} className="flex flex-col gap-4">
           <div>
@@ -71,7 +86,7 @@ function TaskFormPage() {
           </div>
 
           <Button className="bg-amber-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors mt-4">
-            Create
+            {params.id ? "Edit task" : "Create task"}
           </Button>
         </form>
       </Card>

@@ -1,7 +1,9 @@
 import { Card, Button } from "../ui";
 import { useTasks } from "../../context/TaskContext";
+import { useNavigate } from "react-router-dom";
 function TaskCard({ task }) {
   const { deleteTask } = useTasks();
+  const navigate = useNavigate();
   return (
     <Card
       key={task.id}
@@ -12,9 +14,11 @@ function TaskCard({ task }) {
           <h1 className="text-xl font-bold text-gray-900 mb-2">{task.title}</h1>
           <p className="text-gray-900">{task.description}</p>
         </div>
-
         <div className="flex gap-2 mt-4">
-          <Button className="flex-1 text-white bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg font-medium transition-colors">
+          <Button
+            className="flex-1 text-white bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg font-medium transition-colors"
+            onClick={() => navigate(`/tasks/${task.id}/edit`)}
+          >
             Editar
           </Button>
           <Button

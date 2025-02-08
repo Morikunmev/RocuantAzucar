@@ -7,6 +7,11 @@ ALTER TABLE task
 ADD COLUMN user_id INTEGER 
 REFERENCES users(id);
 
+--remove unique fron title
+
+ALTER TABLE task
+DROP CONSTRAINT task_title_key
+
 
 CREATE TABLE users (
    id SERIAL PRIMARY KEY,
@@ -18,3 +23,21 @@ CREATE TABLE users (
 );
 
 ALTER TABLE users ADD COLUMN gravatar VARCHAR(255);
+
+--Resultado final
+CREATE TABLE users (
+   id SERIAL PRIMARY KEY,
+   name VARCHAR(255) NOT NULL,
+   password VARCHAR(255) NOT NULL,
+   email VARCHAR(255) UNIQUE NOT NULL,
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   gravatar VARCHAR(255)
+);
+
+CREATE TABLE task (
+   id SERIAL PRIMARY KEY,
+   title VARCHAR(255) NOT NULL,
+   description TEXT,
+   user_id INTEGER REFERENCES users(id)
+);
