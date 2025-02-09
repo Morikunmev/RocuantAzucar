@@ -9,7 +9,15 @@ function LoginPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+    clearErrors,
+  } = useForm({
+    mode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
   const { signin, errors: loginErrors } = useAuth();
   const navigate = useNavigate();
 
@@ -24,7 +32,7 @@ function LoginPage() {
     <div
       className="min-h-screen flex justify-center items-center bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: `url(${imagen})`, // Cambiado aquí
+        backgroundImage: `url(${imagen})`,
         backgroundColor: "rgba(0,0,0,0.5)",
         backgroundBlend: "overlay",
       }}
@@ -48,10 +56,21 @@ function LoginPage() {
               type="email"
               placeholder="E-mail"
               className="w-full h-11 bg-black/30 border-0 rounded text-gray-300 placeholder-gray-500 focus:ring-1 focus:ring-gray-500"
-              {...register("email", { required: true })}
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: "Invalid email address",
+                },
+                onChange: () => {
+                  clearErrors("email");
+                },
+              })}
             />
             {errors.email && (
-              <p className="text-red-400 text-xs mt-1">Email is required</p>
+              <p className="text-red-400 text-xs mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -61,10 +80,21 @@ function LoginPage() {
               type="password"
               placeholder="Password"
               className="w-full h-11 bg-black/30 border-0 rounded text-gray-300 placeholder-gray-500 focus:ring-1 focus:ring-gray-500"
-              {...register("password", { required: true })}
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+                onChange: () => {
+                  clearErrors("password");
+                },
+              })}
             />
             {errors.password && (
-              <p className="text-red-400 text-xs mt-1">Password is required</p>
+              <p className="text-red-400 text-xs mt-1">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
