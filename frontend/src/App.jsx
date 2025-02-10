@@ -1,8 +1,9 @@
 import { Routes, Route, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
+import { MovimientosProvider } from "./context/MovimientosContext";
 import EstadisticasPage from "./pages/EstadisticasPage";
-import MovimientosPage from "./pages/MovimientosPage";
-import ClientesPage from "./pages/ClientesPage";
+import MovimientosPage from "./pages/MovimientoPage/MovimientosPage";
+import ClientesPage from "./pages/ClientePage/ClientesPage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
@@ -55,7 +56,15 @@ function App() {
               >
                 <Route path="/" element={<EstadisticasPage />} />
                 <Route path="/estadisticas" element={<EstadisticasPage />} />
-                <Route path="/movimientos" element={<MovimientosPage />} />
+                <Route
+                  element={
+                    <MovimientosProvider>
+                      <Outlet />
+                    </MovimientosProvider>
+                  }
+                >
+                  <Route path="/movimientos" element={<MovimientosPage />} />
+                </Route>
                 <Route path="/clientes" element={<ClientesPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
               </Route>
