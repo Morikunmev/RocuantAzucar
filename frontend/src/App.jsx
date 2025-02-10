@@ -11,6 +11,7 @@ import Navbar from "./components/navbar/Navbar";
 import { Container } from "./components/ui";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useState } from "react";
+import { ClientesProvider } from "./context/ClientesContext"; // Añadir esta importación
 
 function App() {
   const { isAuth } = useAuth();
@@ -21,7 +22,6 @@ function App() {
   const handleSidebarExpand = (expanded) => {
     setIsSidebarExpanded(expanded);
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950">
       {isAuth && <Navbar onSidebarExpand={handleSidebarExpand} />}
@@ -56,16 +56,31 @@ function App() {
               >
                 <Route path="/" element={<EstadisticasPage />} />
                 <Route path="/estadisticas" element={<EstadisticasPage />} />
+
+                {/* Rutas de Movimientos con acceso a Clientes */}
                 <Route
                   element={
                     <MovimientosProvider>
-                      <Outlet />
+                      <ClientesProvider>
+                        <Outlet />
+                      </ClientesProvider>
                     </MovimientosProvider>
                   }
                 >
                   <Route path="/movimientos" element={<MovimientosPage />} />
                 </Route>
-                <Route path="/clientes" element={<ClientesPage />} />
+
+                {/* Rutas de Clientes */}
+                <Route
+                  element={
+                    <ClientesProvider>
+                      <Outlet />
+                    </ClientesProvider>
+                  }
+                >
+                  <Route path="/clientes" element={<ClientesPage />} />
+                </Route>
+
                 <Route path="/profile" element={<ProfilePage />} />
               </Route>
               <Route path="*" element={<NotFound />} />

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Input, Label, Button } from "../../components/ui";
 import { useForm } from "react-hook-form";
 import { useMovimientos } from "../../context/MovimientosContext.jsx";
+import { useClientes } from "../../context/ClientesContext";
 
 function AddMovimientosPage({ onClose }) {
   const {
@@ -12,6 +13,7 @@ function AddMovimientosPage({ onClose }) {
   } = useForm();
 
   const { createMovimiento, errors: movimientosErrors } = useMovimientos();
+  const { clientes, loadClientes } = useClientes();
 
   // Observar campos para cálculos
   const valor_kilo = watch("valor_kilo", 0);
@@ -32,6 +34,10 @@ function AddMovimientosPage({ onClose }) {
       maximumFractionDigits: 0,
     }).format(value);
   };
+  // Cargar clientes al montar el componente
+  useEffect(() => {
+    loadClientes();
+  }, []);
 
   // Calcular IVA y Total
   useEffect(() => {
@@ -274,8 +280,11 @@ function AddMovimientosPage({ onClose }) {
               })}
             >
               <option value="">Seleccionar cliente</option>
-              <option value="1">Cliente 1</option>
-              <option value="2">Cliente 2</option>
+              {clientes.map((cliente) => (
+                <option key={cliente.id_cliente} value={cliente.id_cliente}>
+                  {cliente.nombre}
+                </option>
+              ))}
             </select>
             {errors.id_cliente && (
               <span className="text-red-500 text-sm">

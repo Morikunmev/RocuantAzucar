@@ -34,33 +34,39 @@ export const getMovimiento = async (req, res, next) => {
     next(error);
   }
 };
-
+// En movimientos.controller.js
 export const createMovimiento = async (req, res, next) => {
   try {
-    console.log("Received request body:", req.body);
+    // Verificar si ya existe una factura con ese número
+    const facturaExistente = await pool.query(
+      "SELECT * FROM movimientos WHERE numero_factura = $1",
+      [req.body.numero_factura]
+    );
 
-    const {
-      fecha,
-      numero_factura,
-      id_cliente,
-      tipo_movimiento,
-      valor_kilo,
-      ingreso_kilos,
-      egreso_kilos,
-      stock_kilos,
-      compra_azucar,
-      venta_azucar,
-      utilidad_neta,
-      utilidad_total,
-    } = req.body;
-
-    // Validate required fields
-    if (!tipo_movimiento) {
-      return res.status(400).json({ message: "tipo_movimiento is required" });
+    if (facturaExistente.rows.length > 0) {
+      return res.status(400).json({
+        message: "Ya existe un movimiento con ese número de factura",
+      });
     }
 
+    // Si no existe, proceder con la inserción
     const result = await pool.query(
       `INSERT INTO movimientos (
+        fecha, 
+        numero_factura, 
+        id_cliente, 
+        tipo_movimiento,
+        valor_kilo,
+        ingreso_kilos,
+        egreso_kilos,
+        stock_kilos,
+        compra_azucar,
+        venta_azucar,
+        utilidad_neta,
+        utilidad_total,
+        created_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
+      [
         fecha,
         numero_factura,
         id_cliente,
@@ -73,31 +79,16 @@ export const createMovimiento = async (req, res, next) => {
         venta_azucar,
         utilidad_neta,
         utilidad_total,
-        created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
-      RETURNING *`,
-      [
-        fecha,
-        numero_factura,
-        id_cliente,
-        tipo_movimiento,
-        valor_kilo,
-        tipo_movimiento === "Compra" ? ingreso_kilos : null,
-        tipo_movimiento === "Venta" ? egreso_kilos : null,
-        stock_kilos,
-        tipo_movimiento === "Compra" ? compra_azucar : null,
-        tipo_movimiento === "Venta" ? venta_azucar : null,
-        tipo_movimiento === "Venta" ? utilidad_neta : null,
-        tipo_movimiento === "Venta" ? utilidad_total : null,
         req.userId,
       ]
     );
 
     return res.json(result.rows[0]);
   } catch (error) {
-    console.error("Error in createMovimiento:", error);
+    // Manejar el error de restricción única
     if (error.code === "23505") {
-      return res.status(409).json({
+      // Código PostgreSQL para violación de restricción única
+      return res.status(400).json({
         message: "Ya existe un movimiento con ese número de factura",
       });
     }

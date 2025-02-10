@@ -1,101 +1,158 @@
-import { z } from "zod";
+import { pool } from "../db.js";
 
-const movimientoSchema = z.object({
-  fecha: z
-    .string({
-      required_error: "La fecha es requerida",
-    })
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)"),
+export const createMovimiento = async (req, res) => {
+  const {
+    fecha,
+    numero_factura,
+    id_cliente,
+    tipo_movimiento,
+    valor_kilo,
+    stock_kilos,
+    ingreso_kilos,
+    egreso_kilos,
+  } = req.body;
 
-  numero_factura: z
-    .string({
-      required_error: "El número de factura es requerido",
-    })
-    .min(1, "El número de factura no puede estar vacío"),
+  try {
+    const result = await pool.query(
+      `INSERT INTO movimientos (
+        fecha, 
+        numero_factura, 
+        id_cliente, 
+        tipo_movimiento, 
+        valor_kilo, 
+        stock_kilos, 
+        ingreso_kilos, 
+        egreso_kilos,
+        created_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [
+        fecha,
+        numero_factura,
+        id_cliente,
+        tipo_movimiento,
+        valor_kilo,
+        stock_kilos,
+        ingreso_kilos,
+        egreso_kilos,
+        req.user.id,
+      ]
+    );
 
-  id_cliente: z.number({
-    required_error: "El id del cliente es requerido",
-    invalid_type_error: "El id del cliente debe ser un número",
-  }),
+    res.json(result.rows[0]);
+  } catch (error) {
+    if (error.constraint === "movimientos_numero_factura_key") {
+      return res.status(400).json({
+        message: "El número de factura ya existe",
+      });
+    }
+    return res.status(500).json({ message: error.message });
+  }
+};
 
-  tipo_movimiento: z.enum(["Compra", "Venta"], {
-    required_error: "El tipo de movimiento es requerido",
-    invalid_type_error: "El tipo de movimiento debe ser 'Compra' o 'Venta'",
-  }),
+export const getMovimientos = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT m.*, c.nombre as nombre_cliente 
+       FROM movimientos m 
+       LEFT JOIN clientes c ON m.id_cliente = c.id_cliente 
+       ORDER BY m.fecha DESC`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-  valor_kilo: z
-    .number({
-      required_error: "El valor por kilo es requerido",
-      invalid_type_error: "El valor por kilo debe ser un número",
-    })
-    .positive("El valor por kilo debe ser mayor que 0"),
+export const getMovimiento = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT m.*, c.nombre as nombre_cliente 
+       FROM movimientos m 
+       LEFT JOIN clientes c ON m.id_cliente = c.id_cliente 
+       WHERE m.id_movimiento = $1`,
+      [req.params.id]
+    );
 
-  ingreso_kilos: z
-    .number({
-      invalid_type_error: "Los kilos ingresados deben ser un número",
-    })
-    .nonnegative("Los kilos ingresados no pueden ser negativos")
-    .nullish()
-    .superRefine((val, ctx) => {
-      if (ctx.parent.tipo_movimiento === "Compra" && !val) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            "Los kilos ingresados son requeridos para movimientos de compra",
-        });
-      }
-    }),
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Movimiento no encontrado" });
+    }
 
-  egreso_kilos: z
-    .number({
-      invalid_type_error: "Los kilos egresados deben ser un número",
-    })
-    .nonnegative("Los kilos egresados no pueden ser negativos")
-    .nullish()
-    .superRefine((val, ctx) => {
-      if (ctx.parent.tipo_movimiento === "Venta" && !val) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            "Los kilos egresados son requeridos para movimientos de venta",
-        });
-      }
-    }),
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-  stock_kilos: z
-    .number({
-      required_error: "El stock es requerido",
-      invalid_type_error: "El stock debe ser un número",
-    })
-    .nonnegative("El stock no puede ser negativo"),
+export const updateMovimiento = async (req, res) => {
+  const { id } = req.params;
+  const {
+    fecha,
+    numero_factura,
+    id_cliente,
+    tipo_movimiento,
+    valor_kilo,
+    stock_kilos,
+    ingreso_kilos,
+    egreso_kilos,
+  } = req.body;
 
-  compra_azucar: z
-    .number({
-      invalid_type_error: "El monto de compra debe ser un número",
-    })
-    .nonnegative("El monto de compra no puede ser negativo")
-    .nullish(),
+  try {
+    const result = await pool.query(
+      `UPDATE movimientos 
+       SET fecha = COALESCE($1, fecha),
+           numero_factura = COALESCE($2, numero_factura),
+           id_cliente = COALESCE($3, id_cliente),
+           tipo_movimiento = COALESCE($4, tipo_movimiento),
+           valor_kilo = COALESCE($5, valor_kilo),
+           stock_kilos = COALESCE($6, stock_kilos),
+           ingreso_kilos = COALESCE($7, ingreso_kilos),
+           egreso_kilos = COALESCE($8, egreso_kilos),
+           updated_by = $9,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id_movimiento = $10 
+       RETURNING *`,
+      [
+        fecha,
+        numero_factura,
+        id_cliente,
+        tipo_movimiento,
+        valor_kilo,
+        stock_kilos,
+        ingreso_kilos,
+        egreso_kilos,
+        req.user.id,
+        id,
+      ]
+    );
 
-  venta_azucar: z
-    .number({
-      invalid_type_error: "El monto de venta debe ser un número",
-    })
-    .nonnegative("El monto de venta no puede ser negativo")
-    .nullish(),
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Movimiento no encontrado" });
+    }
 
-  utilidad_neta: z
-    .number({
-      invalid_type_error: "La utilidad neta debe ser un número",
-    })
-    .nullish(),
+    res.json(result.rows[0]);
+  } catch (error) {
+    if (error.constraint === "movimientos_numero_factura_key") {
+      return res.status(400).json({
+        message: "El número de factura ya existe",
+      });
+    }
+    res.status(500).json({ message: error.message });
+  }
+};
 
-  utilidad_total: z
-    .number({
-      invalid_type_error: "La utilidad total debe ser un número",
-    })
-    .nullish(),
-});
+export const deleteMovimiento = async (req, res) => {
+  try {
+    const result = await pool.query(
+      "DELETE FROM movimientos WHERE id_movimiento = $1 RETURNING *",
+      [req.params.id]
+    );
 
-export const createMovimientoSchema = movimientoSchema;
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Movimiento no encontrado" });
+    }
 
-export const updateMovimientoSchema = movimientoSchema.partial();
+    res.sendStatus(204);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

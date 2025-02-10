@@ -1,11 +1,39 @@
 export const validateSchema = (schema) => async (req, res, next) => {
   try {
-    await schema.parse(req.body);
+    // Debug logs
+    console.log("Request headers:", req.headers);
+    console.log("Raw request body:", req.body);
+
+    // Verificar si hay body
+    if (!req.body) {
+      throw new Error("Request body is missing");
+    }
+
+    // Validar con Zod
+    const validData = await schema.parseAsync(req.body);
+    console.log("Validated data:", validData);
+
+    // Asignar datos validados
+    req.body = validData;
+
     next();
   } catch (error) {
-    if (Array.isArray(error.errors)) {
-      return res.status(400).json(error.errors.map((error) => error.message));
+    console.error("Validation error:", error);
+
+    // Si es un error de Zod
+    if (error.errors) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: error.errors.map((e) => ({
+          path: e.path.join("."),
+          message: e.message,
+        })),
+      });
     }
-    return res.status(400).json(error.message);
+
+    // Otros errores
+    return res.status(400).json({
+      message: error.message || "Invalid request data",
+    });
   }
 };
