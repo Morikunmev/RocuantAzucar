@@ -3,12 +3,15 @@ import { Input, Label, Button } from "../../components/ui";
 import { useForm } from "react-hook-form";
 import { useMovimientos } from "../../context/MovimientosContext.jsx";
 import { useClientes } from "../../context/ClientesContext";
+import { ClienteModal } from "./ClienteModal";
 
 function AddMovimientosPage({ onClose }) {
   const {
     register,
     handleSubmit,
     watch,
+    setValue, // Añade este
+
     formState: { errors },
   } = useForm();
 
@@ -22,6 +25,8 @@ function AddMovimientosPage({ onClose }) {
     iva: 0,
     total: 0,
   });
+  const [showClienteModal, setShowClienteModal] = useState(false);
+  const [selectedCliente, setSelectedCliente] = useState(null);
 
   const formatCLP = (value) => {
     return new Intl.NumberFormat("es-CL", {
@@ -289,25 +294,38 @@ function AddMovimientosPage({ onClose }) {
               )}
             </div>
           </div>
-
           <div className="space-y-2">
             <Label className="text-gray-300">Cliente</Label>
-            <select
-              className={selectStyles}
-              {...register("id_cliente", {
-                required: "Debe seleccionar un cliente",
-              })}
-            >
-              <option value="">Seleccionar cliente</option>
-              {clientes.map((cliente) => (
-                <option key={cliente.id_cliente} value={cliente.id_cliente}>
-                  {cliente.nombre}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={selectedCliente ? selectedCliente.nombre : ""}
+                className={`${inputStyles} flex-1`}
+                readOnly
+                placeholder="Selecciona un cliente..."
+              />
+              <Button
+                type="button"
+                onClick={() => setShowClienteModal(true)}
+                className="bg-sky-600 hover:bg-sky-700"
+              >
+                {selectedCliente ? "Cambiar" : "Seleccionar"}
+              </Button>
+            </div>
             {errors.id_cliente && (
               <span className={errorStyles}>{errors.id_cliente.message}</span>
             )}
+
+            <ClienteModal
+              isOpen={showClienteModal}
+              onClose={() => setShowClienteModal(false)}
+              onSelectCliente={(cliente) => {
+                setSelectedCliente(cliente);
+                // Actualizar el valor del formulario
+                setValue("id_cliente", cliente.id_cliente);
+                setShowClienteModal(false);
+              }}
+            />
           </div>
 
           {/* Valores Calculados */}
