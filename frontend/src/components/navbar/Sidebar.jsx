@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { TbChartHistogram } from "react-icons/tb";
 import { BiTransfer } from "react-icons/bi";
-import { HiUsers } from "react-icons/hi";
+// import { HiUsers } from "react-icons/hi";
 
 function Sidebar({ onExpand = () => {} }) {
   const location = useLocation();
@@ -29,11 +29,11 @@ function Sidebar({ onExpand = () => {} }) {
       path: "/movimientos",
       icon: BiTransfer,
     },
-    {
-      name: "Clientes",
-      path: "/clientes",
-      icon: HiUsers,
-    },
+    // {
+    //   name: "Clientes",
+    //   path: "/clientes",
+    //   icon: HiUsers,
+    // },
   ];
 
   return (
