@@ -17,13 +17,25 @@ import {
 
 function MovimientosPage() {
   const [showAddPanel, setShowAddPanel] = useState(false);
-  const { movimientos, loadMovimientos, deleteMovimiento } = useMovimientos();
+  const {
+    movimientos,
+    createMovimiento,
+    updateMovimiento,
+    deleteMovimiento,
+    loadMovimientos,
+    errors: movimientosErrors,
+  } = useMovimientos();
+
+  const [showEditPanel, setShowEditPanel] = useState(false);
+  const [selectedMovimiento, setSelectedMovimiento] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteConfirmation, setDeleteConfirmation] = useState({
     isOpen: false,
     movimientoId: null,
     movimientoData: null, // Agregamos este campo para guardar los datos del movimiento
   });
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedCliente, setSelectedCliente] = useState(null);
 
   useEffect(() => {
     loadMovimientos();
@@ -241,9 +253,10 @@ function MovimientosPage() {
                         <td className="p-2 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <button
-                              onClick={() =>
-                                setShowEditPanel(movimiento.id_movimiento)
-                              }
+                              onClick={() => {
+                                setSelectedMovimiento(movimiento);
+                                setShowEditPanel(true);
+                              }}
                               className="text-sm text-sky-500 hover:text-sky-400"
                             >
                               Editar
@@ -373,6 +386,32 @@ function MovimientosPage() {
                 setShowAddPanel(false);
                 loadMovimientos();
               }}
+            />
+          )}
+        </div>
+      </div>
+      <div
+        className={`fixed right-0 top-0 h-screen w-96 bg-gray-900 shadow-lg transform transition-transform duration-300 ${
+          showEditPanel ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="relative h-full">
+          <button
+            onClick={() => setShowEditPanel(false)}
+            className="absolute top-4 right-4 text-gray-400 hover:text-white"
+          >
+            <IoClose size={24} />
+          </button>
+
+          {showEditPanel && selectedMovimiento && (
+            <AddMovimientosPage
+              onClose={() => {
+                setShowEditPanel(false);
+                setSelectedMovimiento(null);
+                loadMovimientos();
+              }}
+              isEditing={true}
+              movimientoToEdit={selectedMovimiento}
             />
           )}
         </div>

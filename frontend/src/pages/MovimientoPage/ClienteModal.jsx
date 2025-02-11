@@ -1,5 +1,5 @@
 // src/pages/MovimientoPage/ClienteModal.jsx
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input, Label, Button } from "../../components/ui";
 import { useClientes } from "../../context/ClientesContext";
 import {
@@ -11,26 +11,47 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "../../components/ui/alert-dialog";
-
-export function ClienteModal({ isOpen, onClose, onSelectCliente }) {
-  const { clientes, createCliente } = useClientes();
-  const [showNewClienteForm, setShowNewClienteForm] = useState(false);
+export function ClienteModal({
+  isOpen,
+  onClose,
+  onSelectCliente,
+  editMode = false,
+  clienteToEdit = null,
+}) {
+  const { clientes, createCliente, updateCliente } = useClientes();
+  const [showNewClienteForm, setShowNewClienteForm] = useState(editMode);
   const [newCliente, setNewCliente] = useState({
-    nombre: "",
-    tipo: "Empresa",
+    nombre: clienteToEdit?.nombre || "",
+    tipo: clienteToEdit?.tipo || "Empresa",
   });
 
-  const handleCreateCliente = async (e) => {
+  // Actualizar el estado cuando cambia clienteToEdit
+  useEffect(() => {
+    if (clienteToEdit) {
+      setNewCliente({
+        nombre: clienteToEdit.nombre,
+        tipo: clienteToEdit.tipo,
+      });
+    }
+  }, [clienteToEdit]);
+
+  const handleCreateOrUpdate = async (e) => {
     e.preventDefault();
     try {
-      const clienteCreado = await createCliente(newCliente);
-      if (clienteCreado) {
+      let result;
+      if (editMode) {
+        result = await updateCliente(clienteToEdit.id_cliente, newCliente);
+      } else {
+        result = await createCliente(newCliente);
+      }
+
+      if (result) {
         setShowNewClienteForm(false);
-        onSelectCliente(clienteCreado);
+        onSelectCliente(result);
         onClose();
       }
     } catch (error) {
-      console.error("Error al crear cliente:", error);
+      console.error("Error al procesar cliente:", error);
     }
   };
 
@@ -39,17 +60,23 @@ export function ClienteModal({ isOpen, onClose, onSelectCliente }) {
       <AlertDialogContent className="bg-gray-800 text-white">
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {showNewClienteForm ? "Nuevo Cliente" : "Seleccionar Cliente"}
+            {editMode
+              ? "Editar Cliente"
+              : showNewClienteForm
+              ? "Nuevo Cliente"
+              : "Seleccionar Cliente"}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-gray-400">
-            {showNewClienteForm
+            {editMode
+              ? "Modifica los datos del cliente"
+              : showNewClienteForm
               ? "Ingresa los datos del nuevo cliente"
               : "Selecciona un cliente existente o crea uno nuevo"}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="my-4">
-          {!showNewClienteForm ? (
+          {!showNewClienteForm && !editMode ? (
             <>
               <div className="grid grid-cols-1 gap-4 max-h-60 overflow-y-auto">
                 {clientes.map((cliente) => (
@@ -74,7 +101,7 @@ export function ClienteModal({ isOpen, onClose, onSelectCliente }) {
               </Button>
             </>
           ) : (
-            <form onSubmit={handleCreateCliente} className="space-y-4">
+            <form onSubmit={handleCreateOrUpdate} className="space-y-4">
               <div>
                 <Label>Nombre</Label>
                 <Input
@@ -102,18 +129,20 @@ export function ClienteModal({ isOpen, onClose, onSelectCliente }) {
                 </select>
               </div>
               <div className="flex gap-2">
-                <Button
-                  type="button"
-                  onClick={() => setShowNewClienteForm(false)}
-                  className="flex-1 bg-gray-700 hover:bg-gray-600"
-                >
-                  Volver
-                </Button>
+                {!editMode && (
+                  <Button
+                    type="button"
+                    onClick={() => setShowNewClienteForm(false)}
+                    className="flex-1 bg-gray-700 hover:bg-gray-600"
+                  >
+                    Volver
+                  </Button>
+                )}
                 <Button
                   type="submit"
                   className="flex-1 bg-green-600 hover:bg-green-700"
                 >
-                  Guardar Cliente
+                  {editMode ? "Guardar Cambios" : "Guardar Cliente"}
                 </Button>
               </div>
             </form>

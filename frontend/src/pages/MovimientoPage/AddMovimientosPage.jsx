@@ -4,18 +4,29 @@ import { useForm } from "react-hook-form";
 import { useMovimientos } from "../../context/MovimientosContext.jsx";
 import { useClientes } from "../../context/ClientesContext";
 import { ClienteModal } from "./ClienteModal";
-
-function AddMovimientosPage({ onClose }) {
+function AddMovimientosPage({
+  onClose,
+  isEditing = false,
+  movimientoToEdit = null,
+}) {
   const {
     register,
     handleSubmit,
     watch,
-    setValue, // Añade este
-
+    setValue,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: movimientoToEdit || {},
+  });
 
-  const { createMovimiento, errors: movimientosErrors } = useMovimientos();
+  const {
+    movimientos, // Añade esta línea
+    createMovimiento,
+    updateMovimiento,
+    deleteMovimiento, // Añade esta línea
+    loadMovimientos, // Añade esta línea
+    errors: movimientosErrors,
+  } = useMovimientos();
   const { clientes, loadClientes } = useClientes();
 
   const valor_kilo = watch("valor_kilo", 0);
@@ -51,7 +62,6 @@ function AddMovimientosPage({ onClose }) {
       total,
     });
   }, [valor_kilo]);
-
   const onSubmit = handleSubmit(async (data) => {
     try {
       const movimientoData = {
@@ -76,7 +86,16 @@ function AddMovimientosPage({ onClose }) {
           tipo_movimiento === "Venta" ? parseFloat(data.utilidad_total) : null,
       };
 
-      const res = await createMovimiento(movimientoData);
+      let res;
+      if (isEditing) {
+        res = await updateMovimiento(
+          movimientoToEdit.id_movimiento,
+          movimientoData
+        );
+      } else {
+        res = await createMovimiento(movimientoData);
+      }
+
       if (res) {
         onClose();
       }
@@ -84,7 +103,6 @@ function AddMovimientosPage({ onClose }) {
       console.error(error);
     }
   });
-
   const inputStyles =
     "w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none transition-colors duration-200";
   const selectStyles =
@@ -96,7 +114,7 @@ function AddMovimientosPage({ onClose }) {
       {/* Header */}
       <div className="px-8 py-6 border-b border-gray-800">
         <h2 className="text-2xl font-bold text-white">
-          Crear Nuevo Movimiento
+          {isEditing ? "Editar Movimiento" : "Crear Nuevo Movimiento"}
         </h2>
         {movimientosErrors.map((error, i) => (
           <p key={i} className="text-red-400 text-sm mt-2">
@@ -398,7 +416,7 @@ function AddMovimientosPage({ onClose }) {
             form="movimientoForm"
             className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200"
           >
-            Guardar Movimiento
+            {isEditing ? "Guardar Cambios" : "Guardar Movimiento"}
           </Button>
           <Button
             type="button"
