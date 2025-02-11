@@ -4,11 +4,26 @@ import { FaFileExcel } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import AddMovimientosPage from "./AddMovimientosPage";
 import { useMovimientos } from "../../context/MovimientosContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
 
 function MovimientosPage() {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const { movimientos, loadMovimientos, deleteMovimiento } = useMovimientos();
   const [searchTerm, setSearchTerm] = useState("");
+  const [deleteConfirmation, setDeleteConfirmation] = useState({
+    isOpen: false,
+    movimientoId: null,
+    movimientoData: null, // Agregamos este campo para guardar los datos del movimiento
+  });
 
   useEffect(() => {
     loadMovimientos();
@@ -20,6 +35,26 @@ function MovimientosPage() {
     } catch (error) {
       console.error("Error al eliminar:", error);
     }
+  };
+  const handleDeleteClick = (movimiento) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      movimientoId: movimiento.id_movimiento,
+      movimientoData: movimiento,
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteMovimiento(deleteConfirmation.movimientoId);
+      setDeleteConfirmation({ isOpen: false, movimientoId: null });
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmation({ isOpen: false, movimientoId: null });
   };
 
   const formatCLP = (value) => {
@@ -214,13 +249,87 @@ function MovimientosPage() {
                               Editar
                             </button>
                             <button
-                              onClick={() =>
-                                handleDelete(movimiento.id_movimiento)
-                              }
+                              onClick={() => handleDeleteClick(movimiento)} // Pasamos todo el objeto movimiento
                               className="text-sm text-red-500 hover:text-red-400"
                             >
                               Eliminar
                             </button>
+                            {/* Agregar el modal de confirmación */}
+                            <AlertDialog
+                              open={deleteConfirmation.isOpen}
+                              onOpenChange={(isOpen) =>
+                                setDeleteConfirmation((prev) => ({
+                                  ...prev,
+                                  isOpen,
+                                }))
+                              }
+                            >
+                              <AlertDialogContent className="bg-gray-800 text-white">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    ¿Confirmar eliminación?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-gray-400">
+                                    Esta acción no se puede deshacer. ¿Estás
+                                    seguro de que deseas eliminar el siguiente
+                                    movimiento?
+                                    <div className="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                                      <div className="grid grid-cols-2 gap-2 text-sm">
+                                        <span className="text-gray-400">
+                                          Factura:
+                                        </span>
+                                        <span className="text-white">
+                                          {deleteConfirmation.movimientoData
+                                            ?.numero_factura || "-"}
+                                        </span>
+
+                                        <span className="text-gray-400">
+                                          Fecha:
+                                        </span>
+                                        <span className="text-white">
+                                          {deleteConfirmation.movimientoData
+                                            ?.fecha
+                                            ? new Date(
+                                                deleteConfirmation.movimientoData.fecha
+                                              ).toLocaleDateString("es-CL")
+                                            : "-"}
+                                        </span>
+
+                                        <span className="text-gray-400">
+                                          Cliente:
+                                        </span>
+                                        <span className="text-white">
+                                          {deleteConfirmation.movimientoData
+                                            ?.cliente_nombre || "-"}
+                                        </span>
+
+                                        <span className="text-gray-400">
+                                          Tipo:
+                                        </span>
+                                        <span className="text-white">
+                                          {deleteConfirmation.movimientoData
+                                            ?.tipo_movimiento || "-"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel
+                                    onClick={handleCancelDelete}
+                                    className="bg-gray-700 text-white hover:bg-gray-600"
+                                  >
+                                    Cancelar
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={handleConfirmDelete}
+                                    className="bg-red-600 text-white hover:bg-red-700"
+                                  >
+                                    Eliminar
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </td>
                       </tr>
