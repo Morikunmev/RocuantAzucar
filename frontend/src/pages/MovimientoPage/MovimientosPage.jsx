@@ -114,23 +114,26 @@ function MovimientosPage() {
             {/* Tabla con scroll horizontal */}
             <div className="rounded-lg bg-gray-800">
               <div className="overflow-x-auto">
-                <table className="w-full" style={{ minWidth: "1500px" }}>
+                <table
+                  className="w-full text-sm"
+                  style={{ minWidth: "1200px" }}
+                >
                   <thead>
                     <tr className="text-gray-400 border-b border-gray-700">
-                      <th className="p-4 text-left">Fecha</th>
-                      <th className="p-4 text-left">Factura</th>
-                      <th className="p-4 text-right">Compra</th>
-                      <th className="p-4 text-right">Venta</th>
-                      <th className="p-4 text-right">Ingreso Kilos</th>
-                      <th className="p-4 text-right">Egreso Kilos</th>
-                      <th className="p-4 text-right">Stock</th>
-                      <th className="p-4 text-right">Valor Kilo</th>
-                      <th className="p-4 text-right">IVA</th>
-                      <th className="p-4 text-right">Total</th>
-                      <th className="p-4 text-right">Utilidad Neta</th>
-                      <th className="p-4 text-right">Utilidad Total</th>
-                      <th className="p-4 text-left">Cliente</th>
-                      <th className="p-4 text-center">Acciones</th>
+                      <th className="p-2 text-left">Fecha</th>
+                      <th className="p-2 text-left">Factura</th>
+                      <th className="p-2 text-right">Compra</th>
+                      <th className="p-2 text-right">Venta</th>
+                      <th className="p-2 text-right">Ing. Kilos</th>
+                      <th className="p-2 text-right">Egr. Kilos</th>
+                      <th className="p-2 text-right">Stock</th>
+                      <th className="p-2 text-right">Val. Kilo</th>
+                      <th className="p-2 text-right">IVA</th>
+                      <th className="p-2 text-right">Total</th>
+                      <th className="p-2 text-right">Util. Neta</th>
+                      <th className="p-2 text-right">Util. Total</th>
+                      <th className="p-2 text-left">Cliente</th>
+                      <th className="p-2 text-center">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -139,74 +142,74 @@ function MovimientosPage() {
                         key={movimiento.id_movimiento}
                         className="border-b border-gray-700 hover:bg-gray-700/50"
                       >
-                        <td className="p-4 text-white">
+                        <td className="p-2 text-gray-200">
                           {movimiento.fecha
                             ? new Date(movimiento.fecha).toLocaleDateString(
                                 "es-CL"
                               )
                             : "-"}
                         </td>
-                        <td className="p-4 text-white">
+                        <td className="p-2 text-gray-200">
                           {movimiento.numero_factura || "-"}
                         </td>
-                        <td className="p-4 text-white text-right">
+                        <td className="p-2 text-gray-200 text-right">
                           {movimiento.tipo_movimiento === "Compra"
                             ? formatCLP(parseFloat(movimiento.compra_azucar))
                             : "-"}
                         </td>
-                        <td className="p-4 text-white text-right">
+                        <td className="p-2 text-gray-200 text-right">
                           {movimiento.tipo_movimiento === "Venta"
                             ? formatCLP(parseFloat(movimiento.venta_azucar))
                             : "-"}
                         </td>
-                        <td className="p-4 text-white text-right">
+                        <td className="p-2 text-gray-200 text-right">
                           {formatNumber(
                             parseFloat(movimiento.ingreso_kilos || 0)
                           )}
                         </td>
-                        <td className="p-4 text-white text-right">
+                        <td className="p-2 text-gray-200 text-right">
                           {formatNumber(
                             parseFloat(movimiento.egreso_kilos || 0)
                           )}
                         </td>
-                        <td className="p-4 text-white text-right">
+                        <td className="p-2 text-gray-200 text-right">
                           {formatNumber(
                             parseFloat(movimiento.stock_kilos || 0)
                           )}
                         </td>
-                        <td className="p-4 text-white text-right">
+                        <td className="p-2 text-gray-200 text-right">
                           {formatCLP(parseFloat(movimiento.valor_kilo || 0))}
                         </td>
-                        <td className="p-4 text-white text-right">
+                        <td className="p-2 text-gray-200 text-right">
                           {formatCLP(parseFloat(movimiento.iva || 0))}
                         </td>
-                        <td className="p-4 text-white text-right">
+                        <td className="p-2 text-gray-200 text-right">
                           {formatCLP(parseFloat(movimiento.total || 0))}
                         </td>
-                        <td className="p-4 text-white text-right">
+                        <td className="p-2 text-gray-200 text-right">
                           {movimiento.tipo_movimiento === "Venta"
                             ? formatCLP(
                                 parseFloat(movimiento.utilidad_neta || 0)
                               )
                             : "-"}
                         </td>
-                        <td className="p-4 text-white text-right">
+                        <td className="p-2 text-gray-200 text-right">
                           {movimiento.tipo_movimiento === "Venta"
                             ? formatCLP(
                                 parseFloat(movimiento.utilidad_total || 0)
                               )
                             : "-"}
                         </td>
-                        <td className="p-4 text-white">
+                        <td className="p-2 text-gray-200">
                           {movimiento.cliente_nombre || "Cliente"}
                         </td>
-                        <td className="p-4 text-center">
+                        <td className="p-2 text-center">
                           <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() =>
                                 setShowEditPanel(movimiento.id_movimiento)
                               }
-                              className="text-sky-500 hover:text-sky-400"
+                              className="text-sm text-sky-500 hover:text-sky-400"
                             >
                               Editar
                             </button>
@@ -214,7 +217,7 @@ function MovimientosPage() {
                               onClick={() =>
                                 handleDelete(movimiento.id_movimiento)
                               }
-                              className="text-red-500 hover:text-red-400"
+                              className="text-sm text-red-500 hover:text-red-400"
                             >
                               Eliminar
                             </button>
