@@ -102,7 +102,7 @@ function MovimientosPage() {
       {/* Contenido principal */}
       <div
         className={`flex-1 overflow-hidden transition-all duration-300 ${
-          showAddPanel ? "mr-96" : ""
+          showAddPanel || showEditPanel ? "mr-96" : "" // Agregamos showEditPanel a la condición
         }`}
       >
         {!movimientos || movimientos.length === 0 ? (
