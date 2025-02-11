@@ -22,17 +22,22 @@ export const validateSchema = (schema) => async (req, res, next) => {
 
     // Si es un error de Zod
     if (error.errors) {
+      // Formatear el error de una manera más limpia
+      const errorMessage = error.errors.find(
+        (e) => e.message === "Este número de factura ya existe"
+      )
+        ? "Este número de factura ya existe"
+        : error.errors[0].message;
+
       return res.status(400).json({
-        message: "Validation failed",
-        errors: error.errors.map((e) => ({
-          path: e.path.join("."),
-          message: e.message,
-        })),
+        status: "error",
+        message: errorMessage,
       });
     }
 
     // Otros errores
     return res.status(400).json({
+      status: "error",
       message: error.message || "Invalid request data",
     });
   }

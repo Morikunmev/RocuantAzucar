@@ -34,22 +34,24 @@ export const getMovimiento = async (req, res, next) => {
     next(error);
   }
 };
-// En movimientos.controller.js
+
 export const createMovimiento = async (req, res, next) => {
+  const {
+    fecha,
+    numero_factura,
+    id_cliente,
+    tipo_movimiento,
+    valor_kilo,
+    ingreso_kilos,
+    egreso_kilos,
+    stock_kilos,
+    compra_azucar,
+    venta_azucar,
+    utilidad_neta,
+    utilidad_total,
+  } = req.body;
+
   try {
-    // Verificar si ya existe una factura con ese número
-    const facturaExistente = await pool.query(
-      "SELECT * FROM movimientos WHERE numero_factura = $1",
-      [req.body.numero_factura]
-    );
-
-    if (facturaExistente.rows.length > 0) {
-      return res.status(400).json({
-        message: "Ya existe un movimiento con ese número de factura",
-      });
-    }
-
-    // Si no existe, proceder con la inserción
     const result = await pool.query(
       `INSERT INTO movimientos (
         fecha, 
@@ -72,45 +74,33 @@ export const createMovimiento = async (req, res, next) => {
         id_cliente,
         tipo_movimiento,
         valor_kilo,
-        ingreso_kilos,
-        egreso_kilos,
+        tipo_movimiento === "Compra" ? ingreso_kilos : null,
+        tipo_movimiento === "Venta" ? egreso_kilos : null,
         stock_kilos,
-        compra_azucar,
-        venta_azucar,
-        utilidad_neta,
-        utilidad_total,
+        tipo_movimiento === "Compra" ? compra_azucar : null,
+        tipo_movimiento === "Venta" ? venta_azucar : null,
+        tipo_movimiento === "Venta" ? utilidad_neta : null,
+        tipo_movimiento === "Venta" ? utilidad_total : null,
         req.userId,
       ]
     );
 
-    return res.json(result.rows[0]);
+    // Obtener el movimiento con el nombre del cliente
+    const movimientoConCliente = await pool.query(
+      `SELECT m.*, c.nombre as cliente_nombre 
+       FROM movimientos m 
+       LEFT JOIN clientes c ON m.id_cliente = c.id_cliente 
+       WHERE m.id_movimiento = $1`,
+      [result.rows[0].id_movimiento]
+    );
+
+    return res.json(movimientoConCliente.rows[0]);
   } catch (error) {
-    // Manejar el error de restricción única
     if (error.code === "23505") {
-      // Código PostgreSQL para violación de restricción única
       return res.status(400).json({
         message: "Ya existe un movimiento con ese número de factura",
       });
     }
-    next(error);
-  }
-};
-
-export const deleteMovimiento = async (req, res, next) => {
-  try {
-    const result = await pool.query(
-      "DELETE FROM movimientos WHERE id_movimiento = $1 AND created_by = $2 RETURNING *",
-      [req.params.id, req.userId]
-    );
-
-    if (result.rowCount === 0) {
-      return res.status(404).json({
-        message: "No existe un movimiento con ese id",
-      });
-    }
-
-    return res.sendStatus(204);
-  } catch (error) {
     next(error);
   }
 };
@@ -176,13 +166,41 @@ export const updateMovimiento = async (req, res, next) => {
       });
     }
 
-    return res.json(result.rows[0]);
+    // Obtener el movimiento actualizado con el nombre del cliente
+    const movimientoConCliente = await pool.query(
+      `SELECT m.*, c.nombre as cliente_nombre 
+       FROM movimientos m 
+       LEFT JOIN clientes c ON m.id_cliente = c.id_cliente 
+       WHERE m.id_movimiento = $1`,
+      [id]
+    );
+
+    return res.json(movimientoConCliente.rows[0]);
   } catch (error) {
     if (error.code === "23505") {
       return res.status(409).json({
         message: "Ya existe un movimiento con ese número de factura",
       });
     }
+    next(error);
+  }
+};
+
+export const deleteMovimiento = async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      "DELETE FROM movimientos WHERE id_movimiento = $1 AND created_by = $2 RETURNING *",
+      [req.params.id, req.userId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({
+        message: "No existe un movimiento con ese id",
+      });
+    }
+
+    return res.sendStatus(204);
+  } catch (error) {
     next(error);
   }
 };
