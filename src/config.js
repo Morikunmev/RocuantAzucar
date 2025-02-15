@@ -5,4 +5,4 @@ export const PG_USER = process.env.PG_USER || "postgres";
 export const PG_PASSWORD = process.env.PG_PASSWORD || "xlgricky20131415";
 export const PG_DATABASE = process.env.PG_DATABASE || "tasksdb";
 
-export const ORIGIN = process.env.ORIGIN || "http://localhost:5173";
+export const ORIGIN = process.env.ORIGIN || ["http://localhost:5173", "https://zooming-wholeness-production.up.railway.app"];
