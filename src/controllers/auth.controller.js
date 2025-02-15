@@ -11,10 +11,12 @@ export const signin = async (req, res) => {
   if (result.rowCount === 0) {
     return res.status(400).json({ message: "El correo no esta registrado" });
   }
-  const validPassword = await bcrypt.compare(password, result.rows[0].password);
-  if (!validPassword) {
+
+  // Comparación directa en lugar de usar bcrypt
+  if (password !== result.rows[0].password) {
     return res.status(400).json({ message: "Contraseña incorrecta" });
   }
+
   const token = await createAccessToken({ id: result.rows[0].id });
   res.cookie("token", token, {
     httpOnly: true,
