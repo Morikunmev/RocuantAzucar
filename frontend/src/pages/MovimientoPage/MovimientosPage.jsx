@@ -145,12 +145,47 @@ function MovimientosPage() {
           <div className="space-y-4">
             {/* Encabezado */}
             <div className="flex items-center justify-between bg-gray-800 p-4 rounded-lg">
-              <div>
-                <h1 className="text-2xl font-bold text-white">
-                  Módulo Movimientos
-                </h1>
-                <div className="text-gray-400 mt-1">
-                  Total movimientos: {movimientos.length}
+              <div className="flex gap-8">
+                <div>
+                  <h1 className="text-2xl font-bold text-white">
+                    Módulo Movimientos
+                  </h1>
+                  <div className="flex gap-8 text-gray-400 mt-1">
+                    <span>Total movimientos: {movimientos.length}</span>
+                    <span className="text-red-400">
+                      Total Compras (
+                      {
+                        movimientos.filter(
+                          (m) => m.tipo_movimiento === "Compra"
+                        ).length
+                      }
+                      ):{" "}
+                      {formatCLP(
+                        movimientos
+                          .filter((m) => m.tipo_movimiento === "Compra")
+                          .reduce(
+                            (sum, m) => sum + parseFloat(m.compra_azucar || 0),
+                            0
+                          )
+                      )}
+                    </span>
+                    <span className="text-green-400">
+                      Total Ventas (
+                      {
+                        movimientos.filter((m) => m.tipo_movimiento === "Venta")
+                          .length
+                      }
+                      ):{" "}
+                      {formatCLP(
+                        movimientos
+                          .filter((m) => m.tipo_movimiento === "Venta")
+                          .reduce(
+                            (sum, m) => sum + parseFloat(m.venta_azucar || 0),
+                            0
+                          )
+                      )}
+                    </span>
+                  </div>
                 </div>
               </div>
               <button
@@ -221,7 +256,13 @@ function MovimientosPage() {
                           {movimientos.map((movimiento) => (
                             <tr
                               key={movimiento.id_movimiento}
-                              className="border-b border-gray-700 hover:bg-gray-700/50"
+                              className={`border-b border-gray-700 ${
+                                movimiento.tipo_movimiento === "Compra"
+                                  ? "bg-red-950/40 hover:bg-red-900/50" // Color más marcado para Compras
+                                  : movimiento.tipo_movimiento === "Venta"
+                                  ? "bg-green-950/40 hover:bg-green-900/50" // Color más marcado para Ventas
+                                  : "hover:bg-gray-700/50"
+                              }`}
                             >
                               <td className="p-2 text-gray-200">-</td>
                               <td className="p-2 text-gray-200">
