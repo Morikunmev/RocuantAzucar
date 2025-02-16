@@ -42,18 +42,32 @@ if (movimientosRoutes) app.use("/api", movimientosRoutes);
 if (clientesRoutes) app.use("/api", clientesRoutes);
 
 // Servir archivos estáticos de React
-app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+app.use(express.static(path.resolve(__dirname, "../frontend/dist")));
 
 // Manejar todas las demás rutas para React Router
 app.get("/*", async (req, res) => {
   try {
-    const indexPath = path.join(__dirname, "../../frontend/dist/index.html");
+    const indexPath = path.resolve(__dirname, "../frontend/dist/index.html");
     console.log("Trying to serve:", indexPath);
 
-    await fs.access(indexPath); // Verifica si el archivo existe
+    await fs.access(indexPath);
     res.sendFile(indexPath);
   } catch (error) {
-    console.error("Error serving index.html:", error);
+    console.error(
+      "Error serving index.html:",
+      error,
+      "Current directory:",
+      __dirname
+    );
+    // Intenta listar el contenido del directorio para debug
+    try {
+      const files = await fs.readdir(
+        path.resolve(__dirname, "../frontend/dist")
+      );
+      console.log("Contents of dist directory:", files);
+    } catch (e) {
+      console.error("Could not read dist directory:", e);
+    }
     res.status(500).json({
       status: "error",
       message: error.message,
