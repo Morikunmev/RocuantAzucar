@@ -1,6 +1,7 @@
 import { Routes, Route, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { MovimientosProvider } from "./context/MovimientosContext";
+import TitleChanger from "./TitleChanger"; // Añade esta importación
 import EstadisticasPage from "./pages/EstadisticasPage";
 import MovimientosPage from "./pages/MovimientoPage/MovimientosPage";
 import ClientesPage from "./pages/ClientePage/ClientesPage";
@@ -11,7 +12,7 @@ import Navbar from "./components/navbar/Navbar";
 import { Container } from "./components/ui";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useState } from "react";
-import { ClientesProvider } from "./context/ClientesContext"; // Añadir esta importación
+import { ClientesProvider } from "./context/ClientesContext";
 
 function App() {
   const { isAuth } = useAuth();
@@ -24,6 +25,7 @@ function App() {
   };
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-950">
+      <TitleChanger /> {/* Añade el componente aquí */}
       {isAuth && <Navbar onSidebarExpand={handleSidebarExpand} />}
 
       {isLoginPage ? (
