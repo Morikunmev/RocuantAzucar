@@ -41,11 +41,11 @@ if (movimientosRoutes) app.use("/api", movimientosRoutes);
 if (clientesRoutes) app.use("/api", clientesRoutes);
 
 // Servir archivos estáticos de React
-app.use(express.static(path.join(__dirname, '../dist')));
+app.use(express.static(path.join(__dirname, '../../frontend/dist')));
 
 // Manejar todas las demás rutas para React Router
-app.get('*/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
 });
 
 // Error handler
