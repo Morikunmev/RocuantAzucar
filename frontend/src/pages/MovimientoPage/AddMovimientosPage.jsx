@@ -243,6 +243,11 @@ function AddMovimientosPage({
                           value: 0,
                           message: "El valor debe ser mayor a 0",
                         },
+                        validate: {
+                          isInteger: (value) =>
+                            Number.isInteger(Number(value)) ||
+                            "Debe ser un número entero",
+                        },
                       })}
                     />
                     {errors.venta_azucar && (
