@@ -44,7 +44,7 @@ if (clientesRoutes) app.use("/api", clientesRoutes);
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // Manejar todas las demás rutas para React Router
-app.get('*', (req, res) => {
+app.get('*/', (req, res) => {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
