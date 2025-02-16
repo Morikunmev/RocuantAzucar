@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import { promises as fs } from "fs"; // Añade esta importación
 
 import taskRoutes from "./routes/tasks.routes.js";
 import authRoutes from "./routes/auth.routes.js";
@@ -44,14 +45,20 @@ if (clientesRoutes) app.use("/api", clientesRoutes);
 app.use(express.static(path.join(__dirname, "../../frontend/dist")));
 
 // Manejar todas las demás rutas para React Router
-app.get("/*", (req, res) => {
-  const indexPath = path.join(__dirname, "../../frontend/dist/index.html");
-  console.log("Trying to serve:", indexPath); // Para debugging
-  if (fs.existsSync(indexPath)) {
+app.get("/*", async (req, res) => {
+  try {
+    const indexPath = path.join(__dirname, "../../frontend/dist/index.html");
+    console.log("Trying to serve:", indexPath);
+
+    await fs.access(indexPath); // Verifica si el archivo existe
     res.sendFile(indexPath);
-  } else {
-    console.error("index.html not found at:", indexPath);
-    res.status(404).send("File not found");
+  } catch (error) {
+    console.error("Error serving index.html:", error);
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+      errors: null,
+    });
   }
 });
 
