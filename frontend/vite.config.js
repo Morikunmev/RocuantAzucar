@@ -19,6 +19,6 @@ export default defineConfig({
   preview: {
     port: process.env.PORT || 5173,
     host: true,
-    allowedHosts: ["https://rocuantazucarfront.up.railway.app/login", ".railway.app"],
+    allowedHosts: ["https://rocuantazucarfront.up.railway.app", ".railway.app"],
   },
 });
