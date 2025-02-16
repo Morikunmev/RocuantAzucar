@@ -2,13 +2,17 @@ import express from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Importaciones con ruta completa y extensión .js
 import taskRoutes from "./routes/tasks.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import movimientosRoutes from "./routes/movimientos.routes.js";
 import clientesRoutes from "./routes/clientes.routes.js";
 import { ORIGIN } from "./config.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -30,16 +34,21 @@ app.use(
 app.use(morgan("dev"));
 app.use(cookieParser());
 
-// Route básica
-app.get("/", (req, res) => res.json({ message: "Welcome to my Api" }));
-
-// Verificar que las rutas existan antes de usarlas
+// API Routes
 if (taskRoutes) app.use("/api", taskRoutes);
 if (authRoutes) app.use("/api", authRoutes);
 if (movimientosRoutes) app.use("/api", movimientosRoutes);
 if (clientesRoutes) app.use("/api", clientesRoutes);
 
-// Error handler más detallado
+// Servir archivos estáticos de React
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// Manejar todas las demás rutas para React Router
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+// Error handler
 app.use((err, req, res, next) => {
   console.error("Error details:", {
     message: err.message,
