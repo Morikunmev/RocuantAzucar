@@ -66,14 +66,14 @@ function AddMovimientosPage({
     try {
       const movimientoData = {
         ...data,
-        valor_kilo: parseFloat(data.valor_kilo),
+        valor_kilo: Math.round(parseFloat(data.valor_kilo)),
         ingreso_kilos:
           tipo_movimiento === "Compra"
-            ? parseFloat(data.ingreso_kilos || 0)
+            ? Math.round(parseFloat(data.ingreso_kilos || 0))
             : null,
         egreso_kilos:
           tipo_movimiento === "Venta"
-            ? parseFloat(data.egreso_kilos || 0)
+            ? Math.round(parseFloat(data.egreso_kilos || 0))
             : null,
         stock_kilos: parseFloat(data.stock_kilos),
         compra_azucar:
@@ -235,7 +235,7 @@ function AddMovimientosPage({
                     <Label className="text-gray-300">Venta $</Label>
                     <Input
                       type="number"
-                      step="0.01"
+                      step="1" // Cambiar aquí
                       className={inputStyles}
                       {...register("venta_azucar", {
                         required: "El monto de venta es requerido",
