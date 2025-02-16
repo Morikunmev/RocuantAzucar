@@ -64,27 +64,36 @@ function AddMovimientosPage({
   }, [valor_kilo]);
   const onSubmit = handleSubmit(async (data) => {
     try {
+      // Imprimir valores originales para debug
+      console.log("Valores originales:", {
+        valor_kilo: data.valor_kilo,
+        ingreso_kilos: data.ingreso_kilos,
+        egreso_kilos: data.egreso_kilos,
+        stock_kilos: data.stock_kilos,
+        compra_azucar: data.compra_azucar,
+        venta_azucar: data.venta_azucar,
+      });
+
       const movimientoData = {
         ...data,
-        valor_kilo: Math.round(parseFloat(data.valor_kilo)),
+        valor_kilo: Number(data.valor_kilo),
         ingreso_kilos:
-          tipo_movimiento === "Compra"
-            ? Math.round(parseFloat(data.ingreso_kilos || 0))
-            : null,
+          tipo_movimiento === "Compra" ? Number(data.ingreso_kilos || 0) : null,
         egreso_kilos:
-          tipo_movimiento === "Venta"
-            ? Math.round(parseFloat(data.egreso_kilos || 0))
-            : null,
-        stock_kilos: parseFloat(data.stock_kilos),
+          tipo_movimiento === "Venta" ? Number(data.egreso_kilos || 0) : null,
+        stock_kilos: Number(data.stock_kilos),
         compra_azucar:
-          tipo_movimiento === "Compra" ? parseFloat(data.compra_azucar) : null,
+          tipo_movimiento === "Compra" ? Number(data.compra_azucar) : null,
         venta_azucar:
-          tipo_movimiento === "Venta" ? parseFloat(data.venta_azucar) : null,
+          tipo_movimiento === "Venta" ? Number(data.venta_azucar) : null,
         utilidad_neta:
-          tipo_movimiento === "Venta" ? parseFloat(data.utilidad_neta) : null,
+          tipo_movimiento === "Venta" ? Number(data.utilidad_neta) : null,
         utilidad_total:
-          tipo_movimiento === "Venta" ? parseFloat(data.utilidad_total) : null,
+          tipo_movimiento === "Venta" ? Number(data.utilidad_total) : null,
       };
+
+      // Imprimir valores transformados para debug
+      console.log("Valores transformados:", movimientoData);
 
       let res;
       if (isEditing) {
@@ -100,7 +109,7 @@ function AddMovimientosPage({
         onClose();
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error en submit:", error);
     }
   });
   const inputStyles =

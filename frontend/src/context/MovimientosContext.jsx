@@ -38,33 +38,33 @@ export function MovimientosProvider({ children }) {
       const formattedData = {
         fecha: movimiento.fecha,
         numero_factura: movimiento.numero_factura,
-        id_cliente: parseInt(movimiento.id_cliente),
+        id_cliente: Number(movimiento.id_cliente),
         tipo_movimiento: movimiento.tipo_movimiento,
-        valor_kilo: parseFloat(movimiento.valor_kilo),
-        stock_kilos: parseFloat(movimiento.stock_kilos),
+        valor_kilo: Number(movimiento.valor_kilo),
+        stock_kilos: Number(movimiento.stock_kilos),
         ingreso_kilos:
           movimiento.tipo_movimiento === "Compra"
-            ? parseFloat(movimiento.ingreso_kilos)
+            ? Number(movimiento.ingreso_kilos)
             : null,
         egreso_kilos:
           movimiento.tipo_movimiento === "Venta"
-            ? parseFloat(movimiento.egreso_kilos)
+            ? Number(movimiento.egreso_kilos)
             : null,
         compra_azucar:
           movimiento.tipo_movimiento === "Compra"
-            ? parseFloat(movimiento.compra_azucar)
+            ? Number(movimiento.compra_azucar)
             : null,
         venta_azucar:
           movimiento.tipo_movimiento === "Venta"
-            ? parseFloat(movimiento.venta_azucar)
+            ? Number(movimiento.venta_azucar)
             : null,
         utilidad_neta:
           movimiento.tipo_movimiento === "Venta"
-            ? parseFloat(movimiento.utilidad_neta)
+            ? Number(movimiento.utilidad_neta)
             : null,
         utilidad_total:
           movimiento.tipo_movimiento === "Venta"
-            ? parseFloat(movimiento.utilidad_total)
+            ? Number(movimiento.utilidad_total)
             : null,
       };
 
