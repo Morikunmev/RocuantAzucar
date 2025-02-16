@@ -2,8 +2,8 @@ import express from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from "path";
+import { fileURLToPath } from "url";
 
 import taskRoutes from "./routes/tasks.routes.js";
 import authRoutes from "./routes/auth.routes.js";
@@ -41,11 +41,18 @@ if (movimientosRoutes) app.use("/api", movimientosRoutes);
 if (clientesRoutes) app.use("/api", clientesRoutes);
 
 // Servir archivos estáticos de React
-app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+app.use(express.static(path.join(__dirname, "../../frontend/dist")));
 
 // Manejar todas las demás rutas para React Router
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
+app.get("/*", (req, res) => {
+  const indexPath = path.join(__dirname, "../../frontend/dist/index.html");
+  console.log("Trying to serve:", indexPath); // Para debugging
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    console.error("index.html not found at:", indexPath);
+    res.status(404).send("File not found");
+  }
 });
 
 // Error handler

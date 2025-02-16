@@ -19,5 +19,9 @@ export default defineConfig({
   preview: {
     port: process.env.PORT || 5173,
     host: true,
+    allowedHosts: [
+      "zooming-wholeness-production.up.railway.app",
+      ".railway.app",
+    ],
   },
 });
