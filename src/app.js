@@ -2,18 +2,12 @@ import express from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import path from "path";
-import { fileURLToPath } from "url";
-import { promises as fs } from "fs"; // Añade esta importación
 
 import taskRoutes from "./routes/tasks.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import movimientosRoutes from "./routes/movimientos.routes.js";
 import clientesRoutes from "./routes/clientes.routes.js";
 import { ORIGIN } from "./config.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -41,39 +35,18 @@ if (authRoutes) app.use("/api", authRoutes);
 if (movimientosRoutes) app.use("/api", movimientosRoutes);
 if (clientesRoutes) app.use("/api", clientesRoutes);
 
-// Servir archivos estáticos de React
-app.use(express.static(path.resolve(__dirname, "../frontend/dist")));
-
-// Manejar todas las demás rutas para React Router
-app.get("/*", async (req, res) => {
-  try {
-    const indexPath = path.resolve(__dirname, "../frontend/dist/index.html");
-    console.log("Trying to serve:", indexPath);
-
-    await fs.access(indexPath);
-    res.sendFile(indexPath);
-  } catch (error) {
-    console.error(
-      "Error serving index.html:",
-      error,
-      "Current directory:",
-      __dirname
-    );
-    // Intenta listar el contenido del directorio para debug
-    try {
-      const files = await fs.readdir(
-        path.resolve(__dirname, "../frontend/dist")
-      );
-      console.log("Contents of dist directory:", files);
-    } catch (e) {
-      console.error("Could not read dist directory:", e);
+// Ruta principal
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to RocuantAzucar API',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      tasks: '/api/tasks',
+      movimientos: '/api/movimientos',
+      clientes: '/api/clientes'
     }
-    res.status(500).json({
-      status: "error",
-      message: error.message,
-      errors: null,
-    });
-  }
+  });
 });
 
 // Error handler
