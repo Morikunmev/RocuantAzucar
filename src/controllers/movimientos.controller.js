@@ -36,22 +36,45 @@ export const getMovimiento = async (req, res, next) => {
 };
 
 export const createMovimiento = async (req, res, next) => {
-  const {
-    fecha,
-    numero_factura,
-    id_cliente,
-    tipo_movimiento,
-    valor_kilo,
-    ingreso_kilos,
-    egreso_kilos,
-    stock_kilos,
-    compra_azucar,
-    venta_azucar,
-    utilidad_neta,
-    utilidad_total,
-  } = req.body;
-
   try {
+    // Primero, destructura y verifica los valores
+    const {
+      fecha,
+      numero_factura,
+      id_cliente,
+      tipo_movimiento,
+      valor_kilo,
+      ingreso_kilos,
+      egreso_kilos,
+      stock_kilos,
+      compra_azucar,
+      venta_azucar,
+      utilidad_neta,
+      utilidad_total,
+    } = req.body;
+
+    // Log para debug
+    console.log("Valores recibidos:", {
+      compra_azucar,
+      venta_azucar,
+      valor_kilo
+    });
+
+    // Asegúrate de que los valores numéricos sean números
+    const processedData = {
+      compra_azucar: tipo_movimiento === "Compra" ? Number(compra_azucar) : null,
+      venta_azucar: tipo_movimiento === "Venta" ? Number(venta_azucar) : null,
+      valor_kilo: Number(valor_kilo),
+      ingreso_kilos: tipo_movimiento === "Compra" ? Number(ingreso_kilos) : null,
+      egreso_kilos: tipo_movimiento === "Venta" ? Number(egreso_kilos) : null,
+      stock_kilos: Number(stock_kilos),
+      utilidad_neta: tipo_movimiento === "Venta" ? Number(utilidad_neta) : null,
+      utilidad_total: tipo_movimiento === "Venta" ? Number(utilidad_total) : null,
+    };
+
+    // Log para verificar la conversión
+    console.log("Valores procesados:", processedData);
+
     const result = await pool.query(
       `INSERT INTO movimientos (
         fecha, 
@@ -73,19 +96,21 @@ export const createMovimiento = async (req, res, next) => {
         numero_factura,
         id_cliente,
         tipo_movimiento,
-        valor_kilo,
-        tipo_movimiento === "Compra" ? ingreso_kilos : null,
-        tipo_movimiento === "Venta" ? egreso_kilos : null,
-        stock_kilos,
-        tipo_movimiento === "Compra" ? compra_azucar : null,
-        tipo_movimiento === "Venta" ? venta_azucar : null,
-        tipo_movimiento === "Venta" ? utilidad_neta : null,
-        tipo_movimiento === "Venta" ? utilidad_total : null,
+        processedData.valor_kilo,
+        processedData.ingreso_kilos,
+        processedData.egreso_kilos,
+        processedData.stock_kilos,
+        processedData.compra_azucar,
+        processedData.venta_azucar,
+        processedData.utilidad_neta,
+        processedData.utilidad_total,
         req.userId,
       ]
     );
 
-    // Obtener el movimiento con el nombre del cliente
+    // Log del resultado
+    console.log("Resultado de la inserción:", result.rows[0]);
+
     const movimientoConCliente = await pool.query(
       `SELECT m.*, c.nombre as cliente_nombre 
        FROM movimientos m 
@@ -96,6 +121,7 @@ export const createMovimiento = async (req, res, next) => {
 
     return res.json(movimientoConCliente.rows[0]);
   } catch (error) {
+    console.error("Error en createMovimiento:", error);
     if (error.code === "23505") {
       return res.status(400).json({
         message: "Ya existe un movimiento con ese número de factura",
