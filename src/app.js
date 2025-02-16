@@ -26,7 +26,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
-      "https://zooming-wholeness-production.up.railway.app",
+      "https://rocuantazucarfront.up.railway.app/login",
     ],
     credentials: true,
   })
