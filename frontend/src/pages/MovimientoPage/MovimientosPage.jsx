@@ -4,6 +4,8 @@ import { FaFileExcel } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import AddMovimientosPage from "./AddMovimientosPage";
 import { useMovimientos } from "../../context/MovimientosContext";
+import { generateMovimientosExcel } from "./ExcelGenerator";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +27,9 @@ function MovimientosPage() {
     loadMovimientos,
     errors: movimientosErrors,
   } = useMovimientos();
+  const handleExcelGeneration = () => {
+    generateMovimientosExcel(filteredMovimientos);
+  };
 
   const [showEditPanel, setShowEditPanel] = useState(false);
   const [selectedMovimiento, setSelectedMovimiento] = useState(null);
@@ -36,6 +41,7 @@ function MovimientosPage() {
   });
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState(null);
+  const [tipoFiltro, setTipoFiltro] = useState("todos"); // Añade esto con los otros estados
 
   useEffect(() => {
     loadMovimientos();
@@ -88,15 +94,21 @@ function MovimientosPage() {
   };
 
   const filteredMovimientos = movimientos
-    .filter(
-      (movimiento) =>
+    .filter((movimiento) => {
+      // Filtro por tipo de movimiento
+      if (tipoFiltro !== "todos" && movimiento.tipo_movimiento !== tipoFiltro) {
+        return false;
+      }
+      // Filtro por búsqueda
+      return (
         movimiento.numero_factura
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
         movimiento.cliente_nombre
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase())
-    )
+      );
+    })
     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
   const groupByDate = (movimientos) => {
@@ -197,18 +209,33 @@ function MovimientosPage() {
             </div>
 
             {/* Barra de búsqueda y filtros */}
+            {/* Barra de búsqueda y filtros */}
             <div className="flex items-center justify-between gap-4">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar por número de factura, cliente..."
-                  className="w-full bg-gray-800 text-white px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-                />
-                <BsSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <div className="flex-1 flex items-center gap-4">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Buscar por número de factura, cliente..."
+                    className="w-full bg-gray-800 text-white px-4 py-2 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                  <BsSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                </div>
+                <select
+                  value={tipoFiltro}
+                  onChange={(e) => setTipoFiltro(e.target.value)}
+                  className="bg-gray-800 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                >
+                  <option value="todos">Todos</option>
+                  <option value="Compra">Compras</option>
+                  <option value="Venta">Ventas</option>
+                </select>
               </div>
-              <button className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+              <button
+                onClick={handleExcelGeneration}
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+              >
                 <FaFileExcel />
                 Generar Excel
               </button>
