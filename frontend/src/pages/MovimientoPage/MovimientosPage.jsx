@@ -87,15 +87,36 @@ function MovimientosPage() {
     }).format(value);
   };
 
-  const filteredMovimientos = movimientos.filter(
-    (movimiento) =>
-      movimiento.numero_factura
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      movimiento.cliente_nombre
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase())
-  );
+  const filteredMovimientos = movimientos
+    .filter(
+      (movimiento) =>
+        movimiento.numero_factura
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        movimiento.cliente_nombre
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+  const groupByDate = (movimientos) => {
+    const groups = {};
+    movimientos.forEach((movimiento) => {
+      if (movimiento.fecha) {
+        const date = new Date(movimiento.fecha);
+        const dateKey = date.toLocaleDateString("es-CL", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+        if (!groups[dateKey]) {
+          groups[dateKey] = [];
+        }
+        groups[dateKey].push(movimiento);
+      }
+    });
+    return groups;
+  };
 
   return (
     <div className="relative flex">
@@ -184,169 +205,111 @@ function MovimientosPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredMovimientos.map((movimiento) => (
-                      <tr
-                        key={movimiento.id_movimiento}
-                        className="border-b border-gray-700 hover:bg-gray-700/50"
-                      >
-                        <td className="p-2 text-gray-200">
-                          {movimiento.fecha
-                            ? new Date(movimiento.fecha).toLocaleDateString(
-                                "es-CL"
-                              )
-                            : "-"}
-                        </td>
-                        <td className="p-2 text-gray-200">
-                          {movimiento.numero_factura || "-"}
-                        </td>
-                        <td className="p-2 text-gray-200 text-right">
-                          {movimiento.tipo_movimiento === "Compra"
-                            ? formatCLP(parseFloat(movimiento.compra_azucar))
-                            : "-"}
-                        </td>
-                        <td className="p-2 text-gray-200 text-right">
-                          {movimiento.tipo_movimiento === "Venta"
-                            ? formatCLP(parseFloat(movimiento.venta_azucar))
-                            : "-"}
-                        </td>
-                        <td className="p-2 text-gray-200 text-right">
-                          {formatNumber(
-                            parseFloat(movimiento.ingreso_kilos || 0)
-                          )}
-                        </td>
-                        <td className="p-2 text-gray-200 text-right">
-                          {formatNumber(
-                            parseFloat(movimiento.egreso_kilos || 0)
-                          )}
-                        </td>
-                        <td className="p-2 text-gray-200 text-right">
-                          {formatNumber(
-                            parseFloat(movimiento.stock_kilos || 0)
-                          )}
-                        </td>
-                        <td className="p-2 text-gray-200 text-right">
-                          {formatCLP(parseFloat(movimiento.valor_kilo || 0))}
-                        </td>
-                        <td className="p-2 text-gray-200 text-right">
-                          {formatCLP(parseFloat(movimiento.iva || 0))}
-                        </td>
-                        <td className="p-2 text-gray-200 text-right">
-                          {formatCLP(parseFloat(movimiento.total || 0))}
-                        </td>
-                        <td className="p-2 text-gray-200 text-right">
-                          {movimiento.tipo_movimiento === "Venta"
-                            ? formatCLP(
-                                parseFloat(movimiento.utilidad_neta || 0)
-                              )
-                            : "-"}
-                        </td>
-                        <td className="p-2 text-gray-200 text-right">
-                          {movimiento.tipo_movimiento === "Venta"
-                            ? formatCLP(
-                                parseFloat(movimiento.utilidad_total || 0)
-                              )
-                            : "-"}
-                        </td>
-                        <td className="p-2 text-gray-200">
-                          {movimiento.cliente_nombre || "Cliente"}
-                        </td>
-                        <td className="p-2 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => {
-                                setSelectedMovimiento(movimiento);
-                                setShowEditPanel(true);
-                              }}
-                              className="text-sm text-sky-500 hover:text-sky-400"
+                    {Object.entries(groupByDate(filteredMovimientos)).map(
+                      ([date, movimientos]) => (
+                        <React.Fragment key={date}>
+                          {/* Encabezado de la fecha */}
+                          <tr className="bg-gray-900">
+                            <td
+                              colSpan="14"
+                              className="p-3 text-lg font-semibold text-white border-b border-gray-700"
                             >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(movimiento)} // Pasamos todo el objeto movimiento
-                              className="text-sm text-red-500 hover:text-red-400"
+                              {date}
+                            </td>
+                          </tr>
+                          {/* Movimientos del día */}
+                          {movimientos.map((movimiento) => (
+                            <tr
+                              key={movimiento.id_movimiento}
+                              className="border-b border-gray-700 hover:bg-gray-700/50"
                             >
-                              Eliminar
-                            </button>
-                            {/* Agregar el modal de confirmación */}
-                            <AlertDialog
-                              open={deleteConfirmation.isOpen}
-                              onOpenChange={(isOpen) =>
-                                setDeleteConfirmation((prev) => ({
-                                  ...prev,
-                                  isOpen,
-                                }))
-                              }
-                            >
-                              <AlertDialogContent className="bg-gray-800 text-white">
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    ¿Confirmar eliminación?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription className="text-gray-400">
-                                    Esta acción no se puede deshacer. ¿Estás
-                                    seguro de que deseas eliminar el siguiente
-                                    movimiento?
-                                    <div className="mt-4 p-3 bg-gray-700/50 rounded-lg">
-                                      <div className="grid grid-cols-2 gap-2 text-sm">
-                                        <span className="text-gray-400">
-                                          Factura:
-                                        </span>
-                                        <span className="text-white">
-                                          {deleteConfirmation.movimientoData
-                                            ?.numero_factura || "-"}
-                                        </span>
-
-                                        <span className="text-gray-400">
-                                          Fecha:
-                                        </span>
-                                        <span className="text-white">
-                                          {deleteConfirmation.movimientoData
-                                            ?.fecha
-                                            ? new Date(
-                                                deleteConfirmation.movimientoData.fecha
-                                              ).toLocaleDateString("es-CL")
-                                            : "-"}
-                                        </span>
-
-                                        <span className="text-gray-400">
-                                          Cliente:
-                                        </span>
-                                        <span className="text-white">
-                                          {deleteConfirmation.movimientoData
-                                            ?.cliente_nombre || "-"}
-                                        </span>
-
-                                        <span className="text-gray-400">
-                                          Tipo:
-                                        </span>
-                                        <span className="text-white">
-                                          {deleteConfirmation.movimientoData
-                                            ?.tipo_movimiento || "-"}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel
-                                    onClick={handleCancelDelete}
-                                    className="bg-gray-700 text-white hover:bg-gray-600"
+                              <td className="p-2 text-gray-200">-</td>
+                              <td className="p-2 text-gray-200">
+                                {movimiento.numero_factura || "-"}
+                              </td>
+                              <td className="p-2 text-gray-200 text-right">
+                                {movimiento.tipo_movimiento === "Compra"
+                                  ? formatCLP(
+                                      parseFloat(movimiento.compra_azucar)
+                                    )
+                                  : "-"}
+                              </td>
+                              <td className="p-2 text-gray-200 text-right">
+                                {movimiento.tipo_movimiento === "Venta"
+                                  ? formatCLP(
+                                      parseFloat(movimiento.venta_azucar)
+                                    )
+                                  : "-"}
+                              </td>
+                              <td className="p-2 text-gray-200 text-right">
+                                {formatNumber(
+                                  parseFloat(movimiento.ingreso_kilos || 0)
+                                )}
+                              </td>
+                              <td className="p-2 text-gray-200 text-right">
+                                {formatNumber(
+                                  parseFloat(movimiento.egreso_kilos || 0)
+                                )}
+                              </td>
+                              <td className="p-2 text-gray-200 text-right">
+                                {formatNumber(
+                                  parseFloat(movimiento.stock_kilos || 0)
+                                )}
+                              </td>
+                              <td className="p-2 text-gray-200 text-right">
+                                {formatCLP(
+                                  parseFloat(movimiento.valor_kilo || 0)
+                                )}
+                              </td>
+                              <td className="p-2 text-gray-200 text-right">
+                                {formatCLP(parseFloat(movimiento.iva || 0))}
+                              </td>
+                              <td className="p-2 text-gray-200 text-right">
+                                {formatCLP(parseFloat(movimiento.total || 0))}
+                              </td>
+                              <td className="p-2 text-gray-200 text-right">
+                                {movimiento.tipo_movimiento === "Venta"
+                                  ? formatCLP(
+                                      parseFloat(movimiento.utilidad_neta || 0)
+                                    )
+                                  : "-"}
+                              </td>
+                              <td className="p-2 text-gray-200 text-right">
+                                {movimiento.tipo_movimiento === "Venta"
+                                  ? formatCLP(
+                                      parseFloat(movimiento.utilidad_total || 0)
+                                    )
+                                  : "-"}
+                              </td>
+                              <td className="p-2 text-gray-200">
+                                {movimiento.cliente_nombre || "Cliente"}
+                              </td>
+                              <td className="p-2 text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedMovimiento(movimiento);
+                                      setShowEditPanel(true);
+                                    }}
+                                    className="text-sm text-sky-500 hover:text-sky-400"
                                   >
-                                    Cancelar
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={handleConfirmDelete}
-                                    className="bg-red-600 text-white hover:bg-red-700"
+                                    Editar
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteClick(movimiento)
+                                    }
+                                    className="text-sm text-red-500 hover:text-red-400"
                                   >
                                     Eliminar
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>
