@@ -178,6 +178,7 @@ function AddMovimientosPage({
               <option value="">Seleccionar tipo</option>
               <option value="Compra">Compra</option>
               <option value="Venta">Venta</option>
+              <option value="Ajuste">Ajuste de Stock</option>
             </select>
             {errors.tipo_movimiento && (
               <span className={errorStyles}>
