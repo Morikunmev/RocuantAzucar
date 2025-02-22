@@ -34,39 +34,50 @@ export function MovimientosProvider({ children }) {
         return null;
       }
 
-      // Format the data before sending
-      const formattedData = {
-        fecha: movimiento.fecha,
-        numero_factura: movimiento.numero_factura,
-        id_cliente: Number(movimiento.id_cliente),
-        tipo_movimiento: movimiento.tipo_movimiento,
-        valor_kilo: Number(movimiento.valor_kilo),
-        stock_kilos: Number(movimiento.stock_kilos),
-        ingreso_kilos:
-          movimiento.tipo_movimiento === "Compra"
-            ? Number(movimiento.ingreso_kilos)
-            : null,
-        egreso_kilos:
-          movimiento.tipo_movimiento === "Venta"
-            ? Number(movimiento.egreso_kilos)
-            : null,
-        compra_azucar:
-          movimiento.tipo_movimiento === "Compra"
-            ? Number(movimiento.compra_azucar)
-            : null,
-        venta_azucar:
-          movimiento.tipo_movimiento === "Venta"
-            ? Number(movimiento.venta_azucar)
-            : null,
-        utilidad_neta:
-          movimiento.tipo_movimiento === "Venta"
-            ? Number(movimiento.utilidad_neta)
-            : null,
-        utilidad_total:
-          movimiento.tipo_movimiento === "Venta"
-            ? Number(movimiento.utilidad_total)
-            : null,
-      };
+      let formattedData;
+
+      // Handle Ajuste type separately
+      if (movimiento.tipo_movimiento === "Ajuste") {
+        formattedData = {
+          fecha: movimiento.fecha,
+          tipo_movimiento: "Ajuste",
+          stock_kilos: Number(movimiento.stock_kilos),
+        };
+      } else {
+        // Format the data for Compra/Venta
+        formattedData = {
+          fecha: movimiento.fecha,
+          numero_factura: movimiento.numero_factura,
+          id_cliente: Number(movimiento.id_cliente),
+          tipo_movimiento: movimiento.tipo_movimiento,
+          valor_kilo: Number(movimiento.valor_kilo),
+          stock_kilos: Number(movimiento.stock_kilos),
+          ingreso_kilos:
+            movimiento.tipo_movimiento === "Compra"
+              ? Number(movimiento.ingreso_kilos)
+              : null,
+          egreso_kilos:
+            movimiento.tipo_movimiento === "Venta"
+              ? Number(movimiento.egreso_kilos)
+              : null,
+          compra_azucar:
+            movimiento.tipo_movimiento === "Compra"
+              ? Number(movimiento.compra_azucar)
+              : null,
+          venta_azucar:
+            movimiento.tipo_movimiento === "Venta"
+              ? Number(movimiento.venta_azucar)
+              : null,
+          utilidad_neta:
+            movimiento.tipo_movimiento === "Venta"
+              ? Number(movimiento.utilidad_neta)
+              : null,
+          utilidad_total:
+            movimiento.tipo_movimiento === "Venta"
+              ? Number(movimiento.utilidad_total)
+              : null,
+        };
+      }
 
       // Log the formatted data
       console.log("Sending formatted data:", formattedData);

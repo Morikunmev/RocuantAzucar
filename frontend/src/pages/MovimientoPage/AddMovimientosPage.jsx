@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useMovimientos } from "../../context/MovimientosContext.jsx";
 import { useClientes } from "../../context/ClientesContext";
 import { ClienteModal } from "./ClienteModal";
+
 function AddMovimientosPage({
   onClose,
   isEditing = false,
@@ -20,14 +21,11 @@ function AddMovimientosPage({
   });
 
   const {
-    movimientos, // Añade esta línea
     createMovimiento,
     updateMovimiento,
-    deleteMovimiento, // Añade esta línea
-    loadMovimientos, // Añade esta línea
     errors: movimientosErrors,
   } = useMovimientos();
-  const { clientes, loadClientes } = useClientes();
+  const { loadClientes } = useClientes();
 
   const valor_kilo = watch("valor_kilo", 0);
   const tipo_movimiento = watch("tipo_movimiento", "");
@@ -53,46 +51,59 @@ function AddMovimientosPage({
   }, []);
 
   useEffect(() => {
-    const valorKilo = parseFloat(valor_kilo) || 0;
-    const iva = valorKilo * 0.19;
-    const total = valorKilo + iva;
+    if (tipo_movimiento !== "Ajuste") {
+      const valorKilo = parseFloat(valor_kilo) || 0;
+      const iva = valorKilo * 0.19;
+      const total = valorKilo + iva;
 
-    setCalculatedValues({
-      iva,
-      total,
-    });
-  }, [valor_kilo]);
+      setCalculatedValues({
+        iva,
+        total,
+      });
+    }
+  }, [valor_kilo, tipo_movimiento]);
+
   const onSubmit = handleSubmit(async (data) => {
     try {
-      // Imprimir valores originales para debug
-      console.log("Valores originales:", {
-        valor_kilo: data.valor_kilo,
-        ingreso_kilos: data.ingreso_kilos,
-        egreso_kilos: data.egreso_kilos,
-        stock_kilos: data.stock_kilos,
-        compra_azucar: data.compra_azucar,
-        venta_azucar: data.venta_azucar,
-      });
+      let movimientoData;
 
-      const movimientoData = {
-        ...data,
-        valor_kilo: Number(data.valor_kilo),
-        ingreso_kilos:
-          tipo_movimiento === "Compra" ? Number(data.ingreso_kilos || 0) : null,
-        egreso_kilos:
-          tipo_movimiento === "Venta" ? Number(data.egreso_kilos || 0) : null,
-        stock_kilos: Number(data.stock_kilos),
-        compra_azucar:
-          tipo_movimiento === "Compra" ? Number(data.compra_azucar) : null,
-        venta_azucar:
-          tipo_movimiento === "Venta" ? Number(data.venta_azucar) : null,
-        utilidad_neta:
-          tipo_movimiento === "Venta" ? Number(data.utilidad_neta) : null,
-        utilidad_total:
-          tipo_movimiento === "Venta" ? Number(data.utilidad_total) : null,
-      };
+      if (data.tipo_movimiento === "Ajuste") {
+        movimientoData = {
+          fecha: data.fecha,
+          tipo_movimiento: "Ajuste",
+          stock_kilos: Number(data.stock_kilos),
+        };
+      } else {
+        // Para Compras y Ventas, excluimos stock_kilos
+        const { stock_kilos, ...restData } = data;
+        movimientoData = {
+          ...restData,
+          valor_kilo: Number(data.valor_kilo),
+          ingreso_kilos:
+            data.tipo_movimiento === "Compra"
+              ? Number(data.ingreso_kilos || 0)
+              : null,
+          egreso_kilos:
+            data.tipo_movimiento === "Venta"
+              ? Number(data.egreso_kilos || 0)
+              : null,
+          compra_azucar:
+            data.tipo_movimiento === "Compra"
+              ? Number(data.compra_azucar)
+              : null,
+          venta_azucar:
+            data.tipo_movimiento === "Venta" ? Number(data.venta_azucar) : null,
+          utilidad_neta:
+            data.tipo_movimiento === "Venta"
+              ? Number(data.utilidad_neta)
+              : null,
+          utilidad_total:
+            data.tipo_movimiento === "Venta"
+              ? Number(data.utilidad_total)
+              : null,
+        };
+      }
 
-      // Imprimir valores transformados para debug
       console.log("Valores transformados:", movimientoData);
 
       let res;
@@ -112,6 +123,7 @@ function AddMovimientosPage({
       console.error("Error en submit:", error);
     }
   });
+
   const inputStyles =
     "w-full px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 focus:outline-none transition-colors duration-200";
   const selectStyles =
@@ -120,7 +132,6 @@ function AddMovimientosPage({
 
   return (
     <div className="flex flex-col h-screen bg-gray-900">
-      {/* Header */}
       <div className="px-8 py-6 border-b border-gray-800">
         <h2 className="text-2xl font-bold text-white">
           {isEditing ? "Editar Movimiento" : "Crear Nuevo Movimiento"}
@@ -132,10 +143,8 @@ function AddMovimientosPage({
         ))}
       </div>
 
-      {/* Formulario scrolleable */}
       <div className="flex-1 overflow-y-auto px-8 py-6">
         <form id="movimientoForm" onSubmit={onSubmit} className="space-y-8">
-          {/* Fecha y Factura */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label className="text-gray-300">Fecha</Label>
@@ -148,25 +157,28 @@ function AddMovimientosPage({
                 <span className={errorStyles}>{errors.fecha.message}</span>
               )}
             </div>
-            <div className="space-y-2">
-              <Label className="text-gray-300">N° Factura</Label>
-              <Input
-                type="text"
-                className={inputStyles}
-                placeholder="Ej: F-001"
-                {...register("numero_factura", {
-                  required: "El número de factura es requerido",
-                })}
-              />
-              {errors.numero_factura && (
-                <span className={errorStyles}>
-                  {errors.numero_factura.message}
-                </span>
-              )}
-            </div>
+            {tipo_movimiento !== "Ajuste" && (
+              <div className="space-y-2">
+                <Label className="text-gray-300">N° Factura</Label>
+                <Input
+                  type="text"
+                  className={inputStyles}
+                  placeholder="Ej: F-001"
+                  {...register("numero_factura", {
+                    required: tipo_movimiento !== "Ajuste" 
+                      ? "El número de factura es requerido" 
+                      : false,
+                  })}
+                />
+                {errors.numero_factura && (
+                  <span className={errorStyles}>
+                    {errors.numero_factura.message}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Tipo de Movimiento */}
           <div className="space-y-2">
             <Label className="text-gray-300">Tipo de Movimiento</Label>
             <select
@@ -187,7 +199,6 @@ function AddMovimientosPage({
             )}
           </div>
 
-          {/* Campos dinámicos basados en tipo de movimiento */}
           {tipo_movimiento && (
             <div className="p-6 bg-gray-800/50 rounded-xl space-y-6">
               <h3 className="text-lg font-medium text-gray-300">
@@ -245,7 +256,7 @@ function AddMovimientosPage({
                     <Label className="text-gray-300">Venta $</Label>
                     <Input
                       type="number"
-                      step="1" // Cambiar aquí
+                      step="1"
                       className={inputStyles}
                       {...register("venta_azucar", {
                         required: "El monto de venta es requerido",
@@ -288,103 +299,108 @@ function AddMovimientosPage({
                   </div>
                 </div>
               )}
+
+              {tipo_movimiento === "Ajuste" && (
+                <div className="space-y-2">
+                  <Label className="text-gray-300">Nuevo Stock (Kilos)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    className={inputStyles}
+                    {...register("stock_kilos", {
+                      required: "El stock es requerido para ajustes",
+                      min: {
+                        value: 0,
+                        message: "El valor debe ser mayor a 0",
+                      },
+                    })}
+                  />
+                  {errors.stock_kilos && (
+                    <span className={errorStyles}>
+                      {errors.stock_kilos.message}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
-          {/* Campos comunes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label className="text-gray-300">Stock Kilos</Label>
-              <Input
-                type="number"
-                step="0.01"
-                className={inputStyles}
-                {...register("stock_kilos", {
-                  required: "El stock es requerido",
-                  min: { value: 0, message: "El valor debe ser mayor a 0" },
-                })}
-              />
-              {errors.stock_kilos && (
-                <span className={errorStyles}>
-                  {errors.stock_kilos.message}
-                </span>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-gray-300">Valor por Kilo</Label>
-              <Input
-                type="number"
-                step="0.01"
-                className={inputStyles}
-                {...register("valor_kilo", {
-                  required: "El valor por kilo es requerido",
-                  min: { value: 0, message: "El valor debe ser mayor a 0" },
-                })}
-              />
-              {errors.valor_kilo && (
-                <span className={errorStyles}>{errors.valor_kilo.message}</span>
-              )}
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-gray-300">Cliente</Label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={selectedCliente ? selectedCliente.nombre : ""}
-                className={`${inputStyles} flex-1`}
-                readOnly
-                placeholder="Selecciona un cliente..."
-              />
-              <Button
-                type="button"
-                onClick={() => setShowClienteModal(true)}
-                className="bg-sky-600 hover:bg-sky-700"
-              >
-                {selectedCliente ? "Cambiar" : "Seleccionar"}
-              </Button>
-            </div>
-            {errors.id_cliente && (
-              <span className={errorStyles}>{errors.id_cliente.message}</span>
-            )}
-
-            <ClienteModal
-              isOpen={showClienteModal}
-              onClose={() => setShowClienteModal(false)}
-              onSelectCliente={(cliente) => {
-                setSelectedCliente(cliente);
-                // Actualizar el valor del formulario
-                setValue("id_cliente", cliente.id_cliente);
-                setShowClienteModal(false);
-              }}
-            />
-          </div>
-
-          {/* Valores Calculados */}
-          <div className="bg-gray-800/50 p-6 rounded-xl space-y-4">
-            <h3 className="text-lg font-medium text-gray-300">
-              Valores Calculados
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {tipo_movimiento !== "Ajuste" && (
+            <>
               <div className="space-y-2">
-                <Label className="text-gray-300">IVA</Label>
-                <div className="px-4 py-2 bg-gray-800 rounded-lg text-white border border-gray-700">
-                  {formatCLP(calculatedValues.iva)}
+                <Label className="text-gray-300">Cliente</Label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={selectedCliente ? selectedCliente.nombre : ""}
+                    className={`${inputStyles} flex-1`}
+                    readOnly
+                    placeholder="Selecciona un cliente..."
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => setShowClienteModal(true)}
+                    className="bg-sky-600 hover:bg-sky-700"
+                  >
+                    {selectedCliente ? "Cambiar" : "Seleccionar"}
+                  </Button>
+                </div>
+                {errors.id_cliente && (
+                  <span className={errorStyles}>{errors.id_cliente.message}</span>
+                )}
+
+                <ClienteModal
+                  isOpen={showClienteModal}
+                  onClose={() => setShowClienteModal(false)}
+                  onSelectCliente={(cliente) => {
+                    setSelectedCliente(cliente);
+                    setValue("id_cliente", cliente.id_cliente);
+                    setShowClienteModal(false);
+                  }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-gray-300">Valor por Kilo</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  className={inputStyles}
+                  {...register("valor_kilo", {
+                    required: "El valor por kilo es requerido",
+                    min: { value: 0, message: "El valor debe ser mayor a 0" },
+                  })}
+                />
+                {errors.valor_kilo && (
+                  <span className={errorStyles}>{errors.valor_kilo.message}</span>
+                )}
+              </div>
+
+              <div className="bg-gray-800/50 p-6 rounded-xl space-y-4">
+                <h3 className="text-lg font-medium text-gray-300">
+                  Valores Calculados
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-gray-300">IVA</Label>
+                    <div className="px-4 py-2 bg-gray-800 rounded-lg text-white border border-gray-700">
+                      {formatCLP(calculatedValues.iva)}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-gray-300">Total con IVA</Label>
+                    <div className="px-4 py-2 bg-gray-800 rounded-lg text-white border border-gray-700">
+                      {formatCLP(calculatedValues.total)}
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-gray-300">Total con IVA</Label>
-                <div className="px-4 py-2 bg-gray-800 rounded-lg text-white border border-gray-700">
-                  {formatCLP(calculatedValues.total)}
-                </div>
-              </div>
-            </div>
-          </div>
-
+            </>
+          )}
           {tipo_movimiento === "Venta" && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
+                <Label className="text-gray-300"></Label>
                 <Label className="text-gray-300">Utilidad Neta</Label>
                 <Input
                   type="number"
