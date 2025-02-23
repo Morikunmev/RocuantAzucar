@@ -494,7 +494,8 @@ function MovimientosPage() {
                 setShowAddPanel(false);
                 loadMovimientos();
               }}
-              stockActual={movimientos[0]?.stock_kilos || 0} // Pasamos el stock actual
+              stockActual={movimientos[0]?.stock_kilos || 0}
+              isFirstMovement={!movimientos || movimientos.length === 0} // Agregamos esta prop
             />
           )}
         </div>

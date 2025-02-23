@@ -9,7 +9,8 @@ function AddMovimientosPage({
   onClose,
   isEditing = false,
   movimientoToEdit = null,
-  stockActual = 0, // Agregamos este prop
+  stockActual = 0,
+  isFirstMovement = false, // Agregamos esta prop con valor por defecto
 }) {
   const {
     register,
@@ -88,6 +89,12 @@ function AddMovimientosPage({
       }
     }
   }, [isEditing, movimientoToEdit, setValue]);
+  // Agregar este nuevo useEffect
+  useEffect(() => {
+    if (isFirstMovement) {
+      setValue("tipo_movimiento", "Ajuste");
+    }
+  }, [isFirstMovement, setValue]);
 
   useEffect(() => {
     loadClientes();
@@ -204,6 +211,7 @@ function AddMovimientosPage({
       <div className="flex-1 overflow-y-auto px-8 py-6">
         <form id="movimientoForm" onSubmit={onSubmit} className="space-y-8">
           {/* Siempre mostrar el selector de tipo */}
+          {/* Siempre mostrar el selector de tipo */}
           <div className="space-y-2">
             <Label className="text-gray-300">Tipo de Movimiento</Label>
             <select
@@ -211,12 +219,24 @@ function AddMovimientosPage({
               {...register("tipo_movimiento", {
                 required: "Debe seleccionar un tipo",
               })}
+              disabled={isFirstMovement} // Deshabilitamos el select si es primer movimiento
             >
-              <option value="">Seleccionar tipo</option>
-              <option value="Compra">Compra</option>
-              <option value="Venta">Venta</option>
-              <option value="Ajuste">Ajuste de Stock</option>
+              {isFirstMovement ? (
+                <option value="Ajuste">Ajuste de Stock</option>
+              ) : (
+                <>
+                  <option value="">Seleccionar tipo</option>
+                  <option value="Compra">Compra</option>
+                  <option value="Venta">Venta</option>
+                  <option value="Ajuste">Ajuste de Stock</option>
+                </>
+              )}
             </select>
+            {isFirstMovement && (
+              <p className="text-yellow-400 text-sm mt-1">
+                Para comenzar, debe realizar un ajuste inicial de stock
+              </p>
+            )}
             {errors.tipo_movimiento && (
               <span className={errorStyles}>
                 {errors.tipo_movimiento.message}
@@ -268,6 +288,32 @@ function AddMovimientosPage({
                 <h3 className="text-lg font-medium text-gray-300">
                   Detalles de {tipo_movimiento}
                 </h3>
+                {tipo_movimiento === "Ajuste" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-gray-300">
+                        Stock Inicial (Kilos)
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        className={inputStyles}
+                        {...register("stock_kilos", {
+                          required: "El stock inicial es requerido",
+                          min: {
+                            value: 0,
+                            message: "El valor debe ser mayor a 0",
+                          },
+                        })}
+                      />
+                      {errors.stock_kilos && (
+                        <span className={errorStyles}>
+                          {errors.stock_kilos.message}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {tipo_movimiento === "Venta" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">

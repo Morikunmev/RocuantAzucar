@@ -2,7 +2,7 @@ import { Routes, Route, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import { MovimientosProvider } from "./context/MovimientosContext";
 import TitleChanger from "./TitleChanger"; // Añade esta importación
-import EstadisticasPage from "./pages/EstadisticasPage";
+import EstadisticasPage from "./pages/EstadisticaPage/EstadisticasPage";
 import MovimientosPage from "./pages/MovimientoPage/MovimientosPage";
 import ClientesPage from "./pages/ClientePage/ClientesPage";
 import LoginPage from "./pages/LoginPage";
