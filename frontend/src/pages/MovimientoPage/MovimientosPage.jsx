@@ -61,18 +61,26 @@ function MovimientosPage() {
       movimientoData: movimiento,
     });
   };
-
   const handleConfirmDelete = async () => {
     try {
       await deleteMovimiento(deleteConfirmation.movimientoId);
-      setDeleteConfirmation({ isOpen: false, movimientoId: null });
+      setDeleteConfirmation({
+        isOpen: false,
+        movimientoId: null,
+        movimientoData: null,
+      });
+      loadMovimientos(); // Recargar la lista después de eliminar
     } catch (error) {
       console.error("Error al eliminar:", error);
     }
   };
 
   const handleCancelDelete = () => {
-    setDeleteConfirmation({ isOpen: false, movimientoId: null });
+    setDeleteConfirmation({
+      isOpen: false,
+      movimientoId: null,
+      movimientoData: null,
+    });
   };
 
   const formatCLP = (value) => {
@@ -95,11 +103,19 @@ function MovimientosPage() {
 
   const filteredMovimientos = movimientos
     .filter((movimiento) => {
+      console.log("Tipo de movimiento:", movimiento.tipo_movimiento); // Para debug
+
       // Filtro por tipo de movimiento
       if (tipoFiltro !== "todos" && movimiento.tipo_movimiento !== tipoFiltro) {
         return false;
       }
-      // Filtro por búsqueda
+
+      // Para ajustes, no filtrar por búsqueda
+      if (movimiento.tipo_movimiento === "Ajuste") {
+        return true;
+      }
+
+      // Filtro por búsqueda solo para Compras y Ventas
       return (
         movimiento.numero_factura
           ?.toLowerCase()
@@ -230,6 +246,7 @@ function MovimientosPage() {
                   <option value="todos">Todos</option>
                   <option value="Compra">Compras</option>
                   <option value="Venta">Ventas</option>
+                  <option value="Ajuste">Ajustes</option>
                 </select>
               </div>
               <button
@@ -285,15 +302,23 @@ function MovimientosPage() {
                               key={movimiento.id_movimiento}
                               className={`border-b border-gray-700 ${
                                 movimiento.tipo_movimiento === "Compra"
-                                  ? "bg-red-950/40 hover:bg-red-900/50" // Color más marcado para Compras
+                                  ? "bg-red-950/40 hover:bg-red-900/50"
                                   : movimiento.tipo_movimiento === "Venta"
-                                  ? "bg-green-950/40 hover:bg-green-900/50" // Color más marcado para Ventas
+                                  ? "bg-green-950/40 hover:bg-green-900/50"
+                                  : movimiento.tipo_movimiento === "Ajuste"
+                                  ? "bg-blue-950/40 hover:bg-blue-900/50" // Color especial para Ajustes
                                   : "hover:bg-gray-700/50"
                               }`}
                             >
-                              <td className="p-2 text-gray-200">-</td>
                               <td className="p-2 text-gray-200">
-                                {movimiento.numero_factura || "-"}
+                                {new Date(movimiento.fecha).toLocaleDateString(
+                                  "es-CL"
+                                )}
+                              </td>
+                              <td className="p-2 text-gray-200">
+                                {movimiento.tipo_movimiento === "Ajuste"
+                                  ? "Ajuste de Stock"
+                                  : movimiento.numero_factura || "-"}
                               </td>
                               <td className="p-2 text-gray-200 text-right">
                                 {movimiento.tipo_movimiento === "Compra"
@@ -320,20 +345,36 @@ function MovimientosPage() {
                                 )}
                               </td>
                               <td className="p-2 text-gray-200 text-right">
-                                {formatNumber(
-                                  parseFloat(movimiento.stock_kilos || 0)
+                                {movimiento.tipo_movimiento === "Ajuste" ? (
+                                  <span className="text-blue-400 font-medium">
+                                    {formatNumber(
+                                      parseFloat(movimiento.stock_kilos || 0)
+                                    )}
+                                  </span>
+                                ) : (
+                                  formatNumber(
+                                    parseFloat(movimiento.stock_kilos || 0)
+                                  )
                                 )}
                               </td>
                               <td className="p-2 text-gray-200 text-right">
-                                {formatCLP(
-                                  parseFloat(movimiento.valor_kilo || 0)
-                                )}
+                                {movimiento.tipo_movimiento === "Ajuste"
+                                  ? "-"
+                                  : formatCLP(
+                                      parseFloat(movimiento.valor_kilo || 0)
+                                    )}
                               </td>
                               <td className="p-2 text-gray-200 text-right">
-                                {formatCLP(parseFloat(movimiento.iva || 0))}
+                                {movimiento.tipo_movimiento === "Ajuste"
+                                  ? "-"
+                                  : formatCLP(parseFloat(movimiento.iva || 0))}
                               </td>
                               <td className="p-2 text-gray-200 text-right">
-                                {formatCLP(parseFloat(movimiento.total || 0))}
+                                {movimiento.tipo_movimiento === "Ajuste"
+                                  ? "-"
+                                  : formatCLP(
+                                      parseFloat(movimiento.total || 0)
+                                    )}
                               </td>
                               <td className="p-2 text-gray-200 text-right">
                                 {movimiento.tipo_movimiento === "Venta"
@@ -350,7 +391,9 @@ function MovimientosPage() {
                                   : "-"}
                               </td>
                               <td className="p-2 text-gray-200">
-                                {movimiento.cliente_nombre || "Cliente"}
+                                {movimiento.tipo_movimiento === "Ajuste"
+                                  ? "-"
+                                  : movimiento.cliente_nombre || "Cliente"}
                               </td>
                               <td className="p-2 text-center">
                                 <div className="flex items-center justify-center gap-2">
@@ -433,7 +476,6 @@ function MovimientosPage() {
           >
             <IoClose size={24} />
           </button>
-
           {showEditPanel && selectedMovimiento && (
             <AddMovimientosPage
               onClose={() => {
@@ -447,6 +489,33 @@ function MovimientosPage() {
           )}
         </div>
       </div>
+      {/* Agregar el AlertDialog aquí */}
+      <AlertDialog open={deleteConfirmation.isOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Esto eliminará permanentemente
+              el movimiento
+              {deleteConfirmation.movimientoData && (
+                <span className="font-medium">
+                  {" "}
+                  con factura {deleteConfirmation.movimientoData.numero_factura}
+                </span>
+              )}
+              .
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelDelete}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

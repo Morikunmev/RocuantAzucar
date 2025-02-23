@@ -9,62 +9,30 @@ const movimientoSchema = z.object({
     })
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)"),
 
-  numero_factura: z
-    .string({
-      required_error: "El número de factura es requerido",
-    })
-    .min(1, "El número de factura no puede estar vacío")
-    .nullable(), // Permitir null para ajustes
-
-  id_cliente: z
-    .number({
-      invalid_type_error: "El id del cliente debe ser un número",
-    })
-    .nullable(), // Permitir null para ajustes
-
   tipo_movimiento: z
     .string({
       required_error: "El tipo de movimiento es requerido",
     })
-    .refine((val) => ["Compra", "Venta", "Ajuste"].includes(val), {
-      message: "El tipo de movimiento debe ser 'Compra', 'Venta' o 'Ajuste'",
-    }),
-
-  valor_kilo: z
-    .number({
-      invalid_type_error: "El valor por kilo debe ser un número",
-    })
-    .positive("El valor por kilo debe ser mayor que 0")
-    .nullable(), // Permitir null para ajustes
+    .refine((val) => ["Compra", "Venta", "Ajuste"].includes(val)),
 
   stock_kilos: z
     .number({
       invalid_type_error: "El stock debe ser un número",
     })
-    .nonnegative("El stock no puede ser negativo"),
+    .nonnegative("El stock no puede ser negativo")
+    .nullable() // Permitir null para compras y ventas
+    .optional(), // Hacer el campo opcional
 
-  ingreso_kilos: z
-    .number()
-    .nonnegative("Los kilos ingresados no pueden ser negativos")
-    .nullable(),
-
-  egreso_kilos: z
-    .number()
-    .nonnegative("Los kilos egresados no pueden ser negativos")
-    .nullable(),
-
-  compra_azucar: z
-    .number()
-    .nonnegative("El monto de compra no puede ser negativo")
-    .nullable(),
-
-  venta_azucar: z
-    .number()
-    .nonnegative("El monto de venta no puede ser negativo")
-    .nullable(),
-
-  utilidad_neta: z.number().nullable(),
-  utilidad_total: z.number().nullable(),
+  // Todos los demás campos opcionales para ajustes
+  numero_factura: z.string().min(1).nullable().optional(),
+  id_cliente: z.number().nullable().optional(),
+  valor_kilo: z.number().positive().nullable().optional(),
+  ingreso_kilos: z.number().nonnegative().nullable().optional(),
+  egreso_kilos: z.number().nonnegative().nullable().optional(),
+  compra_azucar: z.number().nonnegative().nullable().optional(),
+  venta_azucar: z.number().nonnegative().nullable().optional(),
+  utilidad_neta: z.number().nullable().optional(),
+  utilidad_total: z.number().nullable().optional(),
 });
 
 // Schema con validaciones específicas por tipo de movimiento
@@ -72,23 +40,7 @@ const movimientoSchemaWithValidations = movimientoSchema.superRefine(
   (data, ctx) => {
     // Validaciones para Ajuste
     if (data.tipo_movimiento === "Ajuste") {
-      // Verificar que solo se incluyan los campos permitidos para ajuste
-      const camposAjuste = ["fecha", "tipo_movimiento", "stock_kilos"];
-      Object.keys(data).forEach((campo) => {
-        if (
-          !camposAjuste.includes(campo) &&
-          data[campo] !== null &&
-          data[campo] !== undefined
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `El campo ${campo} no debe estar presente en un ajuste`,
-            path: [campo],
-          });
-        }
-      });
-
-      // Verificar que stock_kilos esté presente
+      // Solo validar fecha y stock_kilos para ajustes
       if (data.stock_kilos === undefined || data.stock_kilos === null) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -96,9 +48,18 @@ const movimientoSchemaWithValidations = movimientoSchema.superRefine(
           path: ["stock_kilos"],
         });
       }
-      return; // Terminar aquí para ajustes
+    } else {
+      // Para compras y ventas, stock_kilos debe ser null o no estar presente
+      if (data.stock_kilos !== null && data.stock_kilos !== undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "No se debe especificar stock_kilos en compras o ventas",
+          path: ["stock_kilos"],
+        });
+      }
+      // No validar otros campos para ajustes
+      return;
     }
-
     // Validaciones para Compra
     if (data.tipo_movimiento === "Compra") {
       // Verificar campos requeridos
@@ -179,7 +140,7 @@ const movimientoSchemaWithValidations = movimientoSchema.superRefine(
 // Schema para crear movimientos (incluye validación de número de factura único)
 export const createMovimientoSchema = movimientoSchemaWithValidations.refine(
   async (data) => {
-    // Solo validar número de factura único si no es un ajuste
+    // Solo validar número de factura único si NO es un ajuste
     if (data.tipo_movimiento !== "Ajuste" && data.numero_factura) {
       try {
         const result = await pool.query(
