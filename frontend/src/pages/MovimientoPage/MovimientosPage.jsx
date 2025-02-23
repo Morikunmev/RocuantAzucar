@@ -213,6 +213,40 @@ function MovimientosPage() {
                           )
                       )}
                     </span>
+                    <span className="text-yellow-400">
+                      Diferencia:{" "}
+                      {formatCLP(
+                        movimientos
+                          .filter((m) => m.tipo_movimiento === "Compra")
+                          .reduce(
+                            (sum, m) => sum + parseFloat(m.compra_azucar || 0),
+                            0
+                          ) -
+                          movimientos
+                            .filter((m) => m.tipo_movimiento === "Venta")
+                            .reduce(
+                              (sum, m) => sum + parseFloat(m.venta_azucar || 0),
+                              0
+                            )
+                      )}
+                    </span>
+                    {/* Añadimos el contador de ajustes */}
+                    <span className="text-purple-400">
+                      Total Ajustes (
+                      {
+                        movimientos.filter(
+                          (m) => m.tipo_movimiento === "Ajuste"
+                        ).length
+                      }
+                      )
+                    </span>
+                    <span className="text-blue-400">
+                      Stock Actual:{" "}
+                      {formatNumber(
+                        parseFloat(filteredMovimientos[0]?.stock_kilos || "0")
+                      )}{" "}
+                      kg
+                    </span>
                   </div>
                 </div>
               </div>
@@ -460,6 +494,7 @@ function MovimientosPage() {
                 setShowAddPanel(false);
                 loadMovimientos();
               }}
+              stockActual={movimientos[0]?.stock_kilos || 0} // Pasamos el stock actual
             />
           )}
         </div>

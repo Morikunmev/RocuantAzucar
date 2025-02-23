@@ -103,6 +103,9 @@ export function MovimientosProvider({ children }) {
       return null;
     }
   };
+  const clearErrors = () => {
+    setErrors([]); // Cambiado de setMovimientosErrors a setErrors
+  };
 
   // Rest of the context code remains the same
   const loadMovimientos = async () => {
@@ -161,6 +164,7 @@ export function MovimientosProvider({ children }) {
         deleteMovimiento,
         updateMovimiento,
         errors,
+        clearErrors, // Agregamos clearErrors al value
       }}
     >
       {children}

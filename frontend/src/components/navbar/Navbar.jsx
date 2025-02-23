@@ -42,7 +42,7 @@ function Navbar({ onSidebarExpand = () => {} }) {
                     onClick={handleProfileClick}
                     className={linkStyles("/profile")}
                   >
-                    <span>Profile</span>
+                    <span>Perfil</span>
                   </button>
                 </li>
                 <li>

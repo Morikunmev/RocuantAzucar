@@ -9,6 +9,7 @@ function AddMovimientosPage({
   onClose,
   isEditing = false,
   movimientoToEdit = null,
+  stockActual = 0, // Agregamos este prop
 }) {
   const {
     register,
@@ -29,6 +30,7 @@ function AddMovimientosPage({
     createMovimiento,
     updateMovimiento,
     errors: movimientosErrors,
+    clearErrors, // Agregamos esto
   } = useMovimientos();
   const { loadClientes } = useClientes();
 
@@ -42,6 +44,14 @@ function AddMovimientosPage({
   const [showClienteModal, setShowClienteModal] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState(null);
 
+  // Agregar junto a la función formatCLP
+  const formatNumber = (value) => {
+    if (typeof value !== "number") return "0";
+    return new Intl.NumberFormat("es-CL", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
   const formatCLP = (value) => {
     return new Intl.NumberFormat("es-CL", {
       style: "currency",
@@ -82,6 +92,21 @@ function AddMovimientosPage({
   useEffect(() => {
     loadClientes();
   }, []);
+  // Limpiar errores al cambiar tipo de movimiento
+  useEffect(() => {
+    clearErrors();
+  }, [tipo_movimiento]);
+  // Limpiar al cambiar egreso_kilos
+  useEffect(() => {
+    if (watch("egreso_kilos")) {
+      clearErrors();
+    }
+  }, [watch("egreso_kilos")]);
+  // En la función onClose
+  const handleClose = () => {
+    clearErrors();
+    onClose();
+  };
 
   useEffect(() => {
     if (tipo_movimiento !== "Ajuste") {
@@ -151,7 +176,7 @@ function AddMovimientosPage({
       }
 
       if (res) {
-        onClose();
+        handleClose(); // Cambiamos onClose por handleClose
       }
     } catch (error) {
       console.error("Error en submit:", error);
@@ -243,52 +268,6 @@ function AddMovimientosPage({
                 <h3 className="text-lg font-medium text-gray-300">
                   Detalles de {tipo_movimiento}
                 </h3>
-
-                {tipo_movimiento === "Compra" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label className="text-gray-300">Compra $</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        className={inputStyles}
-                        {...register("compra_azucar", {
-                          required: "El monto de compra es requerido",
-                          min: {
-                            value: 0,
-                            message: "El valor debe ser mayor a 0",
-                          },
-                        })}
-                      />
-                      {errors.compra_azucar && (
-                        <span className={errorStyles}>
-                          {errors.compra_azucar.message}
-                        </span>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-gray-300">Ingreso Kilos</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        className={inputStyles}
-                        {...register("ingreso_kilos", {
-                          required: "El ingreso de kilos es requerido",
-                          min: {
-                            value: 0,
-                            message: "El valor debe ser mayor a 0",
-                          },
-                        })}
-                      />
-                      {errors.ingreso_kilos && (
-                        <span className={errorStyles}>
-                          {errors.ingreso_kilos.message}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
                 {tipo_movimiento === "Venta" && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
@@ -318,47 +297,92 @@ function AddMovimientosPage({
                     </div>
                     <div className="space-y-2">
                       <Label className="text-gray-300">Egreso Kilos</Label>
+                      <div className="space-y-1">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          className={inputStyles}
+                          {...register("egreso_kilos", {
+                            required: "El egreso de kilos es requerido",
+                            min: {
+                              value: 0,
+                              message: "El valor debe ser mayor a 0",
+                            },
+                          })}
+                        />
+                        {watch("egreso_kilos") > 0 && (
+                          <div className="text-sm text-sky-400 mt-2">
+                            Stock resultante:{" "}
+                            {formatNumber(
+                              Number(stockActual) -
+                                Number(watch("egreso_kilos") || 0)
+                            )}{" "}
+                            kg
+                          </div>
+                        )}
+                        {errors.egreso_kilos && (
+                          <span className={errorStyles}>
+                            {errors.egreso_kilos.message}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {tipo_movimiento === "Compra" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-gray-300">Compra $</Label>
                       <Input
                         type="number"
                         step="0.01"
                         className={inputStyles}
-                        {...register("egreso_kilos", {
-                          required: "El egreso de kilos es requerido",
+                        {...register("compra_azucar", {
+                          required: "El monto de compra es requerido",
                           min: {
                             value: 0,
                             message: "El valor debe ser mayor a 0",
                           },
                         })}
                       />
-                      {errors.egreso_kilos && (
+                      {errors.compra_azucar && (
                         <span className={errorStyles}>
-                          {errors.egreso_kilos.message}
+                          {errors.compra_azucar.message}
                         </span>
                       )}
                     </div>
-                  </div>
-                )}
-
-                {tipo_movimiento === "Ajuste" && (
-                  <div className="space-y-2">
-                    <Label className="text-gray-300">Nuevo Stock (Kilos)</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      className={inputStyles}
-                      {...register("stock_kilos", {
-                        required: "El stock es requerido para ajustes",
-                        min: {
-                          value: 0,
-                          message: "El valor debe ser mayor a 0",
-                        },
-                      })}
-                    />
-                    {errors.stock_kilos && (
-                      <span className={errorStyles}>
-                        {errors.stock_kilos.message}
-                      </span>
-                    )}
+                    <div className="space-y-2">
+                      <Label className="text-gray-300">Ingreso Kilos</Label>
+                      <div className="space-y-1">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          className={inputStyles}
+                          {...register("ingreso_kilos", {
+                            required: "El ingreso de kilos es requerido",
+                            min: {
+                              value: 0,
+                              message: "El valor debe ser mayor a 0",
+                            },
+                          })}
+                        />
+                        {watch("ingreso_kilos") > 0 && (
+                          <div className="text-sm text-sky-400 mt-2">
+                            Stock resultante:{" "}
+                            {formatNumber(
+                              Number(stockActual) +
+                                Number(watch("ingreso_kilos") || 0)
+                            )}{" "}
+                            kg
+                          </div>
+                        )}
+                        {errors.ingreso_kilos && (
+                          <span className={errorStyles}>
+                            {errors.ingreso_kilos.message}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -506,7 +530,7 @@ function AddMovimientosPage({
           </Button>
           <Button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200"
           >
             Cancelar
