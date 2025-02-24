@@ -135,7 +135,7 @@ function AddMovimientosPage({
         movimientoData = {
           fecha: data.fecha,
           tipo_movimiento: "Ajuste",
-          stock_kilos: Number(data.stock_kilos),
+          stock_kilos: parseInt(data.stock_kilos, 10),
         };
       } else {
         // Para Compras y Ventas, omitimos completamente stock_kilos
@@ -146,28 +146,35 @@ function AddMovimientosPage({
           numero_factura: data.numero_factura,
           id_cliente: Number(data.id_cliente),
           tipo_movimiento: data.tipo_movimiento,
-          valor_kilo: Number(data.valor_kilo),
+          valor_kilo:
+            data.tipo_movimiento === "Compra" ||
+            data.tipo_movimiento === "Venta"
+              ? parseFloat(data.valor_kilo || 0)
+              : null,
           ingreso_kilos:
             data.tipo_movimiento === "Compra"
-              ? Number(data.ingreso_kilos || 0)
+              ? parseFloat(data.ingreso_kilos || 0)
               : null,
           egreso_kilos:
             data.tipo_movimiento === "Venta"
-              ? Number(data.egreso_kilos || 0)
+              ? parseFloat(data.egreso_kilos || 0)
               : null,
+          // Para compra_azucar y venta_azucar, aseguramos que los valores sean números válidos
           compra_azucar:
-            data.tipo_movimiento === "Compra"
-              ? Number(data.compra_azucar)
+            data.tipo_movimiento === "Compra" && data.compra_azucar
+              ? parseFloat(data.compra_azucar)
               : null,
           venta_azucar:
-            data.tipo_movimiento === "Venta" ? Number(data.venta_azucar) : null,
+            data.tipo_movimiento === "Venta" && data.venta_azucar
+              ? parseFloat(data.venta_azucar)
+              : null,
           utilidad_neta:
-            data.tipo_movimiento === "Venta"
-              ? Number(data.utilidad_neta)
+            data.tipo_movimiento === "Venta" && data.utilidad_neta
+              ? parseFloat(data.utilidad_neta)
               : null,
           utilidad_total:
-            data.tipo_movimiento === "Venta"
-              ? Number(data.utilidad_total)
+            data.tipo_movimiento === "Venta" && data.utilidad_total
+              ? parseFloat(data.utilidad_total)
               : null,
         };
       }

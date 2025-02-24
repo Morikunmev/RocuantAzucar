@@ -50,31 +50,31 @@ export function MovimientosProvider({ children }) {
           numero_factura: movimiento.numero_factura,
           id_cliente: Number(movimiento.id_cliente),
           tipo_movimiento: movimiento.tipo_movimiento,
-          valor_kilo: Number(movimiento.valor_kilo),
-          stock_kilos: Number(movimiento.stock_kilos),
+          valor_kilo: parseFloat(movimiento.valor_kilo),
+          stock_kilos: parseFloat(movimiento.stock_kilos),
           ingreso_kilos:
             movimiento.tipo_movimiento === "Compra"
-              ? Number(movimiento.ingreso_kilos)
+              ? parseFloat(movimiento.ingreso_kilos)
               : null,
           egreso_kilos:
             movimiento.tipo_movimiento === "Venta"
-              ? Number(movimiento.egreso_kilos)
+              ? parseFloat(movimiento.egreso_kilos)
               : null,
           compra_azucar:
             movimiento.tipo_movimiento === "Compra"
-              ? Number(movimiento.compra_azucar)
+              ? parseFloat(movimiento.compra_azucar)
               : null,
           venta_azucar:
             movimiento.tipo_movimiento === "Venta"
-              ? Number(movimiento.venta_azucar)
+              ? parseFloat(movimiento.venta_azucar)
               : null,
           utilidad_neta:
             movimiento.tipo_movimiento === "Venta"
-              ? Number(movimiento.utilidad_neta)
+              ? parseFloat(movimiento.utilidad_neta)
               : null,
           utilidad_total:
             movimiento.tipo_movimiento === "Venta"
-              ? Number(movimiento.utilidad_total)
+              ? parseFloat(movimiento.utilidad_total)
               : null,
         };
       }

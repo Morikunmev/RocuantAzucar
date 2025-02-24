@@ -37,7 +37,7 @@ export const getMovimiento = async (req, res, next) => {
     next(error);
   }
 };
-
+// En el archivo movimientos.controllers.js
 export const createMovimiento = async (req, res, next) => {
   const client = await pool.connect();
   try {
@@ -52,6 +52,8 @@ export const createMovimiento = async (req, res, next) => {
       valor_kilo,
       ingreso_kilos,
       egreso_kilos,
+      compra_azucar, // Añadimos estos campos
+      venta_azucar, // Añadimos estos campos
       utilidad_neta,
       utilidad_total,
     } = req.body;
@@ -78,10 +80,12 @@ export const createMovimiento = async (req, res, next) => {
           valor_kilo,
           ingreso_kilos,
           egreso_kilos,
+          compra_azucar,    -- Añadimos estos campos
+          venta_azucar,     -- Añadimos estos campos
           utilidad_neta,
           utilidad_total,
           created_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
         [
           fecha,
           numero_factura,
@@ -90,6 +94,8 @@ export const createMovimiento = async (req, res, next) => {
           valor_kilo,
           tipo_movimiento === "Compra" ? ingreso_kilos : null,
           tipo_movimiento === "Venta" ? egreso_kilos : null,
+          tipo_movimiento === "Compra" ? compra_azucar : null, // Agregamos
+          tipo_movimiento === "Venta" ? venta_azucar : null, // Agregamos
           tipo_movimiento === "Venta" ? utilidad_neta : null,
           tipo_movimiento === "Venta" ? utilidad_total : null,
           req.userId,

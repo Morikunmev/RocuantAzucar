@@ -88,8 +88,8 @@ BEGIN
     -- Lógica específica para cada tipo de movimiento
     CASE NEW.tipo_movimiento
         WHEN 'Compra' THEN
-            -- Cálculos para compras
-            NEW.compra_azucar := NEW.valor_kilo * NEW.ingreso_kilos;
+            -- Ya no calculamos compra_azucar, respetamos el valor que viene
+            -- NEW.compra_azucar := NEW.valor_kilo * NEW.ingreso_kilos; -- Quitamos esta línea
             NEW.venta_azucar := NULL;
             NEW.utilidad_neta := NULL;
             NEW.utilidad_total := NULL;
@@ -101,8 +101,8 @@ BEGIN
                 RAISE EXCEPTION 'Stock insuficiente. Actual: %, Solicitado: %', 
                     ultimo_stock, NEW.egreso_kilos;
             END IF;
-            -- Cálculos para ventas
-            NEW.venta_azucar := NEW.valor_kilo * NEW.egreso_kilos;
+            -- Ya no calculamos venta_azucar, respetamos el valor que viene
+            -- NEW.venta_azucar := NEW.valor_kilo * NEW.egreso_kilos; -- Quitamos esta línea
             NEW.compra_azucar := NULL;
             NEW.stock_kilos := ultimo_stock - NEW.egreso_kilos;
             
