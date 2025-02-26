@@ -19,6 +19,7 @@ export const useMovimientos = () => {
 
 export function MovimientosProvider({ children }) {
   const [movimientos, setMovimientos] = useState([]);
+  const [latestStock, setLatestStock] = useState(0); // Nuevo estado para el stock más reciente
   const [errors, setErrors] = useState([]);
 
   // Create a new movimiento
@@ -86,6 +87,11 @@ export function MovimientosProvider({ children }) {
       console.log("Response received:", res);
 
       setMovimientos([...movimientos, res.data]);
+
+      // Actualizar el latest stock si es un nuevo movimiento
+      // Asumiendo que el stock_kilos del movimiento recién creado es el más reciente
+      setLatestStock(parseFloat(res.data.stock_kilos) || latestStock);
+
       return res.data;
     } catch (error) {
       console.error("Detailed error:", {
@@ -103,15 +109,39 @@ export function MovimientosProvider({ children }) {
       return null;
     }
   };
+
   const clearErrors = () => {
-    setErrors([]); // Cambiado de setMovimientosErrors a setErrors
+    setErrors([]);
   };
 
-  // Rest of the context code remains the same
+  // Cargar movimientos y obtener el stock más reciente
   const loadMovimientos = async () => {
     try {
       const res = await getAllMovimientosRequest();
-      setMovimientos(res.data);
+
+      // Manejar la nueva estructura de respuesta
+      if (res.data && typeof res.data === "object") {
+        // Si el backend ya fue modificado para devolver { movimientos, latestStock }
+        if (Array.isArray(res.data.movimientos)) {
+          setMovimientos(res.data.movimientos);
+          setLatestStock(parseFloat(res.data.latestStock) || 0);
+        }
+        // Compatibilidad con el formato anterior
+        else if (Array.isArray(res.data)) {
+          setMovimientos(res.data);
+
+          // Encontrar el movimiento más reciente por created_at
+          // Ordenar por created_at en formato de fecha
+          const sortedMovimientos = [...res.data].sort((a, b) => {
+            return new Date(b.created_at) - new Date(a.created_at);
+          });
+
+          // Establecer el stock del movimiento más reciente
+          if (sortedMovimientos.length > 0) {
+            setLatestStock(parseFloat(sortedMovimientos[0].stock_kilos) || 0);
+          }
+        }
+      }
     } catch (error) {
       console.error(error);
       setErrors([
@@ -127,6 +157,10 @@ export function MovimientosProvider({ children }) {
         setMovimientos(
           movimientos.filter((movimiento) => movimiento.id_movimiento !== id)
         );
+
+        // Recargar los movimientos para asegurar que tenemos el stock actualizado
+        loadMovimientos();
+
         return true;
       }
       return false;
@@ -145,6 +179,10 @@ export function MovimientosProvider({ children }) {
       setMovimientos(
         movimientos.map((item) => (item.id_movimiento === id ? res.data : item))
       );
+
+      // Recargar los movimientos para asegurar que tenemos el stock actualizado
+      loadMovimientos();
+
       return res.data;
     } catch (error) {
       console.error(error);
@@ -159,12 +197,13 @@ export function MovimientosProvider({ children }) {
     <MovimientosContext.Provider
       value={{
         movimientos,
+        latestStock, // Añadido el nuevo valor al contexto
         loadMovimientos,
         createMovimiento,
         deleteMovimiento,
         updateMovimiento,
         errors,
-        clearErrors, // Agregamos clearErrors al value
+        clearErrors,
       }}
     >
       {children}

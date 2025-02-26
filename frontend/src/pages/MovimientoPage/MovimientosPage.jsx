@@ -21,6 +21,7 @@ function MovimientosPage() {
   const [showAddPanel, setShowAddPanel] = useState(false);
   const {
     movimientos,
+    latestStock, // Añadir esta línea
     createMovimiento,
     updateMovimiento,
     deleteMovimiento,
@@ -214,18 +215,20 @@ function MovimientosPage() {
                       )}
                     </span>
                     <span className="text-yellow-400">
-                      Diferencia:{" "}
+                      Resultado Operativo:{" "}
                       {formatCLP(
+                        // Invertimos el orden del cálculo para que sea consistente con Estadísticas
                         movimientos
-                          .filter((m) => m.tipo_movimiento === "Compra")
+                          .filter((m) => m.tipo_movimiento === "Venta")
                           .reduce(
-                            (sum, m) => sum + parseFloat(m.compra_azucar || 0),
+                            (sum, m) => sum + parseFloat(m.venta_azucar || 0),
                             0
                           ) -
                           movimientos
-                            .filter((m) => m.tipo_movimiento === "Venta")
+                            .filter((m) => m.tipo_movimiento === "Compra")
                             .reduce(
-                              (sum, m) => sum + parseFloat(m.venta_azucar || 0),
+                              (sum, m) =>
+                                sum + parseFloat(m.compra_azucar || 0),
                               0
                             )
                       )}
@@ -243,7 +246,7 @@ function MovimientosPage() {
                     <span className="text-blue-400">
                       Stock Actual:{" "}
                       {formatNumber(
-                        parseFloat(filteredMovimientos[0]?.stock_kilos || "0")
+                        parseFloat(latestStock || "0") // Usar latestStock en lugar de filteredMovimientos[0]?.stock_kilos
                       )}{" "}
                       kg
                     </span>
@@ -432,11 +435,9 @@ function MovimientosPage() {
                               <td className="p-2 text-center">
                                 <div className="flex items-center justify-center gap-2">
                                   <button
-                                    onClick={() => {
-                                      setSelectedMovimiento(movimiento);
-                                      setShowEditPanel(true);
-                                    }}
-                                    className="text-sm text-sky-500 hover:text-sky-400"
+                                    disabled
+                                    className="text-sm text-gray-500 cursor-not-allowed"
+                                    title="Edición temporalmente deshabilitada"
                                   >
                                     Editar
                                   </button>
@@ -494,8 +495,8 @@ function MovimientosPage() {
                 setShowAddPanel(false);
                 loadMovimientos();
               }}
-              stockActual={movimientos[0]?.stock_kilos || 0}
-              isFirstMovement={!movimientos || movimientos.length === 0} // Agregamos esta prop
+              stockActual={latestStock || 0} // Usar latestStock en lugar de movimientos[0]?.stock_kilos
+              isFirstMovement={!movimientos || movimientos.length === 0}
             />
           )}
         </div>

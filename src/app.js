@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.routes.js";
 import movimientosRoutes from "./routes/movimientos.routes.js";
 import clientesRoutes from "./routes/clientes.routes.js";
 import { ORIGIN } from "./config.js";
+import estadisticasRoutes from "./routes/estadisticas.routes.js";
 
 const app = express();
 
@@ -34,18 +35,20 @@ if (taskRoutes) app.use("/api", taskRoutes);
 if (authRoutes) app.use("/api", authRoutes);
 if (movimientosRoutes) app.use("/api", movimientosRoutes);
 if (clientesRoutes) app.use("/api", clientesRoutes);
+if (estadisticasRoutes) app.use("/api", estadisticasRoutes); // Añadir esta línea
 
 // Ruta principal
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.json({
-    message: 'Welcome to RocuantAzucar API',
-    version: '1.0.0',
+    message: "Welcome to RocuantAzucar API",
+    version: "1.0.0",
     endpoints: {
-      auth: '/api/auth',
-      tasks: '/api/tasks',
-      movimientos: '/api/movimientos',
-      clientes: '/api/clientes'
-    }
+      auth: "/api/auth",
+      tasks: "/api/tasks",
+      movimientos: "/api/movimientos",
+      clientes: "/api/clientes",
+      estadisticas: "/api/estadisticas", // Añadir esta línea
+    },
   });
 });
 

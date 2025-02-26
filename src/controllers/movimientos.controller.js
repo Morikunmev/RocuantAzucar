@@ -2,6 +2,7 @@ import { pool } from "../db.js";
 
 export const getAllMovimientos = async (req, res, next) => {
   try {
+    // Consulta principal para obtener todos los movimientos
     const result = await pool.query(
       `SELECT m.*, c.nombre as cliente_nombre 
        FROM movimientos m 
@@ -10,7 +11,28 @@ export const getAllMovimientos = async (req, res, next) => {
        ORDER BY m.fecha DESC, m.id_movimiento DESC`,
       [req.userId]
     );
-    return res.json(result.rows);
+
+    // Consulta adicional para obtener el último stock (ordenado por created_at)
+    const latestStockResult = await pool.query(
+      `SELECT stock_kilos 
+       FROM movimientos 
+       WHERE created_by = $1 
+       ORDER BY created_at DESC, id_movimiento DESC 
+       LIMIT 1`,
+      [req.userId]
+    );
+
+    // Obtener el último stock o usar 0 como valor predeterminado
+    const latestStock =
+      latestStockResult.rows.length > 0
+        ? parseFloat(latestStockResult.rows[0].stock_kilos)
+        : 0;
+
+    // Devolver los movimientos y el último stock
+    return res.json({
+      movimientos: result.rows,
+      latestStock: latestStock,
+    });
   } catch (error) {
     next(error);
   }
