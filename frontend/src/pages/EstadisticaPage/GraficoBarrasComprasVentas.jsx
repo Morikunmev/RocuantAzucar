@@ -2,6 +2,16 @@
 import React, { useState, useEffect } from "react";
 import { formatCLP } from "./formatters";
 import axios from "../../api/axios";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const GraficoBarrasComprasVentas = ({ periodo = "anual" }) => {
   const [data, setData] = useState(null);
@@ -80,13 +90,29 @@ const GraficoBarrasComprasVentas = ({ periodo = "anual" }) => {
     );
   }
 
-  // Encontrar el valor máximo para escalar el gráfico
-  const maxValue = data.monthly.reduce((max, item) => {
-    return Math.max(max, item.compras || 0, item.ventas || 0);
-  }, 0);
+  // Formatear los datos para Recharts
+  const chartData = data.monthly.map((item) => ({
+    mes: item.mes,
+    compras: item.compras || 0,
+    ventas: item.ventas || 0,
+  }));
 
-  // Altura máxima de las barras en píxeles
-  const maxBarHeight = 200;
+  // Formateo personalizado para el tooltip
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-gray-800 p-2 border border-gray-700 rounded shadow">
+          <p className="font-medium text-white">{label}</p>
+          {payload.map((entry, index) => (
+            <p key={index} style={{ color: entry.color }}>
+              {entry.name}: {formatCLP(entry.value)}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
@@ -94,80 +120,29 @@ const GraficoBarrasComprasVentas = ({ periodo = "anual" }) => {
         Compras vs Ventas
       </h2>
 
-      {/* Gráfico de barras */}
-      <div className="mt-6">
-        <div className="relative h-64">
-          {/* Eje Y - Valores */}
-          <div className="absolute top-0 bottom-0 left-0 w-16 flex flex-col justify-between text-xs text-gray-400">
-            <div>{formatCLP(maxValue)}</div>
-            <div>{formatCLP(maxValue * 0.75)}</div>
-            <div>{formatCLP(maxValue * 0.5)}</div>
-            <div>{formatCLP(maxValue * 0.25)}</div>
-            <div>{formatCLP(0)}</div>
-          </div>
-
-          {/* Líneas de referencia horizontales */}
-          <div className="absolute left-16 right-0 top-0 bottom-0 flex flex-col justify-between">
-            <div className="border-t border-gray-700 h-0"></div>
-            <div className="border-t border-gray-700 h-0"></div>
-            <div className="border-t border-gray-700 h-0"></div>
-            <div className="border-t border-gray-700 h-0"></div>
-            <div className="border-t border-gray-700 h-0"></div>
-          </div>
-
-          {/* Contenedor de barras */}
-          <div className="absolute left-16 right-0 top-0 bottom-0 flex items-end justify-around">
-            {data.monthly.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-end justify-center space-x-2"
-              >
-                {/* Barra de compras */}
-                <div className="flex flex-col items-center">
-                  <div
-                    className="w-10 bg-red-500 rounded-t"
-                    style={{
-                      height:
-                        maxValue > 0
-                          ? `${
-                              ((item.compras || 0) / maxValue) * maxBarHeight
-                            }px`
-                          : "0px",
-                    }}
-                  ></div>
-                  <div className="text-xs text-gray-400 mt-2">{item.mes}</div>
-                </div>
-
-                {/* Barra de ventas */}
-                <div className="flex flex-col items-center">
-                  <div
-                    className="w-10 bg-green-500 rounded-t"
-                    style={{
-                      height:
-                        maxValue > 0
-                          ? `${
-                              ((item.ventas || 0) / maxValue) * maxBarHeight
-                            }px`
-                          : "0px",
-                    }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Leyenda */}
-        <div className="flex justify-center mt-4 space-x-6">
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-red-500 rounded mr-2"></div>
-            <span className="text-sm text-gray-300">Compras</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
-            <span className="text-sm text-gray-300">Ventas</span>
-          </div>
-        </div>
+      {/* Gráfico de barras usando Recharts */}
+      <div style={{ width: "100%", height: 300 }}>
+        <ResponsiveContainer>
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+            <XAxis dataKey="mes" stroke="#999" />
+            <YAxis
+              stroke="#999"
+              tickFormatter={(value) => {
+                if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
+                return value;
+              }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend wrapperStyle={{ color: "#fff" }} />
+            <Bar dataKey="compras" name="Compras" fill="#EF4444" />
+            <Bar dataKey="ventas" name="Ventas" fill="#22C55E" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
       {/* Resumen de totales */}

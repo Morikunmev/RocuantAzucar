@@ -2,6 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { formatCLP } from "./formatters";
 import axios from "../../api/axios";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts";
 
 const GraficoCircularComprasVentas = ({ periodo = "anual" }) => {
   const [data, setData] = useState(null);
@@ -86,6 +94,28 @@ const GraficoCircularComprasVentas = ({ periodo = "anual" }) => {
   const { totales } = data;
   const totalMonto = totales.total_compras + totales.total_ventas;
 
+  // Datos para el gráfico de Recharts
+  const chartData = [
+    { name: "Compras", value: totales.total_compras || 0 },
+    { name: "Ventas", value: totales.total_ventas || 0 },
+  ];
+
+  // Colores para el gráfico
+  const COLORS = ["#EF4444", "#22C55E"];
+
+  // Formateo personalizado para el tooltip
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-gray-800 p-2 border border-gray-700 rounded shadow text-sm">
+          <p className="font-medium text-white">{payload[0].name}</p>
+          <p className="text-gray-300">{formatCLP(payload[0].value)}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
       <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
@@ -93,53 +123,45 @@ const GraficoCircularComprasVentas = ({ periodo = "anual" }) => {
       </h2>
 
       <div className="grid grid-cols-1 gap-6">
-        {/* Gráfico circular */}
-        <div className="flex justify-center">
-          <div className="relative w-64 h-64">
-            {/* Círculo base */}
-            <svg className="w-full h-full" viewBox="0 0 100 100">
-              {/* Sector para compras */}
-              {totales.porcentaje_compras > 0 && (
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  fill="transparent"
-                  stroke="#EF4444"
-                  strokeWidth="20"
-                  strokeDasharray={`${totales.porcentaje_compras * 2.51} 251`}
-                  transform="rotate(-90 50 50)"
-                />
-              )}
+        {/* Gráfico circular usando Recharts */}
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+                label={({ name, percent }) =>
+                  `${name} ${(percent * 100).toFixed(0)}%`
+                }
+              >
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
 
-              {/* Sector para ventas */}
-              {totales.porcentaje_ventas > 0 && (
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  fill="transparent"
-                  stroke="#22C55E"
-                  strokeWidth="20"
-                  strokeDasharray={`${totales.porcentaje_ventas * 2.51} 251`}
-                  strokeDashoffset={`${-totales.porcentaje_compras * 2.51}`}
-                  transform="rotate(-90 50 50)"
-                />
-              )}
-            </svg>
-
-            {/* Texto central */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 rounded-full w-32 h-32 m-auto">
-              <span className="text-sm text-gray-400">Total</span>
-              <span className="text-xl font-bold text-white">
-                {formatCLP(totalMonto)}
-              </span>
-            </div>
-          </div>
+        {/* Centro del gráfico - Total */}
+        {/* Texto central */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-800 rounded-full w-32 h-32 m-auto border-2 border-gray-700">
+          <span className="text-sm text-gray-400">Total</span>
+          <span className="text-xl font-bold text-white px-2 py-1 rounded bg-gray-900">
+            {formatCLP(totalMonto)}
+          </span>
         </div>
 
         {/* Leyenda y detalles */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 mt-6">
           <div className="bg-gray-800 p-4 rounded-md">
             <div className="flex items-center mb-2">
               <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
