@@ -16,6 +16,17 @@ function EstadisticasPage() {
   const [resumen, setResumen] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Nuevo estado para controlar el renderizado progresivo
+  const [componentesVisibles, setComponentesVisibles] = useState({
+    graficoCircular: false,
+    clientesTop: false,
+    graficoBarras: false,
+    balanceInventario: false,
+    tablaCompras: false,
+    tablaVentas: false,
+  });
+
   useEffect(() => {
     const cargarResumen = async () => {
       try {
@@ -59,10 +70,59 @@ function EstadisticasPage() {
         );
       } finally {
         setLoading(false);
+
+        // Una vez cargados los datos básicos, comenzamos a mostrar los componentes progresivamente
+        setTimeout(
+          () =>
+            setComponentesVisibles((prev) => ({
+              ...prev,
+              graficoCircular: true,
+            })),
+          300
+        );
+        setTimeout(
+          () =>
+            setComponentesVisibles((prev) => ({ ...prev, clientesTop: true })),
+          600
+        );
+        setTimeout(
+          () =>
+            setComponentesVisibles((prev) => ({
+              ...prev,
+              graficoBarras: true,
+            })),
+          900
+        );
+        setTimeout(
+          () =>
+            setComponentesVisibles((prev) => ({
+              ...prev,
+              balanceInventario: true,
+            })),
+          1200
+        );
+        setTimeout(
+          () =>
+            setComponentesVisibles((prev) => ({ ...prev, tablaCompras: true })),
+          1500
+        );
+        setTimeout(
+          () =>
+            setComponentesVisibles((prev) => ({ ...prev, tablaVentas: true })),
+          1800
+        );
       }
     };
 
     cargarResumen();
+
+    // Limpieza de timeouts cuando el componente se desmonta
+    return () => {
+      const timeouts = [];
+      for (let i = 0; i < timeouts.length; i++) {
+        clearTimeout(timeouts[i]);
+      }
+    };
   }, [periodo]);
 
   const exportarEstadisticas = () => {
@@ -93,7 +153,8 @@ function EstadisticasPage() {
                   {!loading && formatCLP(resumen?.valor_ventas || 0)}
                 </span>
                 <span className="text-yellow-400">
-                  Resultado Operativo: {!loading && formatCLP(resumen?.diferencia || 0)}
+                  Resultado Operativo:{" "}
+                  {!loading && formatCLP(resumen?.diferencia || 0)}
                 </span>
                 <span className="text-blue-400">
                   Stock Actual:{" "}
@@ -139,25 +200,116 @@ function EstadisticasPage() {
           {/* Sección 1: Resumen y comparativas */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Compras vs Ventas (gráfico circular) */}
-            <GraficoCircularComprasVentas periodo={periodo} />
+            {componentesVisibles.graficoCircular ? (
+              <GraficoCircularComprasVentas periodo={periodo} />
+            ) : (
+              <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+                  Compras vs Ventas
+                </h2>
+                <div className="flex justify-center items-center py-12">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-75"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-150"></div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Clientes Top */}
-            <GraficoClientesTop periodo={periodo} limite={5} />
+            {componentesVisibles.clientesTop ? (
+              <GraficoClientesTop periodo={periodo} limite={5} />
+            ) : (
+              <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+                  Transacciones por Cliente
+                </h2>
+                <div className="flex justify-center items-center py-12">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-75"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-150"></div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sección 2: Distribución y Tablas */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Compras vs Ventas (gráfico de barras) */}
-            <GraficoBarrasComprasVentas periodo={periodo} />
+            {componentesVisibles.graficoBarras ? (
+              <GraficoBarrasComprasVentas periodo={periodo} />
+            ) : (
+              <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+                  Compras vs Ventas
+                </h2>
+                <div className="flex justify-center items-center py-12">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-75"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-150"></div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Balance de inventario */}
-            <BalanceInventario />
+            {componentesVisibles.balanceInventario ? (
+              <BalanceInventario />
+            ) : (
+              <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+                  Balance de Inventario
+                </h2>
+                <div className="flex justify-center items-center py-12">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-75"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-150"></div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sección 3: Tablas detalladas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <TablaCompras periodo="anual" />
-            <TablaVentas periodo="anual" />
+            {componentesVisibles.tablaCompras ? (
+              <TablaCompras periodo="anual" />
+            ) : (
+              <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+                  Compras por Mes
+                </h2>
+                <div className="flex justify-center items-center py-12">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-75"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-150"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {componentesVisibles.tablaVentas ? (
+              <TablaVentas periodo="anual" />
+            ) : (
+              <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+                  Ventas por Mes
+                </h2>
+                <div className="flex justify-center items-center py-12">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-75"></div>
+                    <div className="w-3 h-3 rounded-full bg-sky-600 animate-pulse delay-150"></div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Paginación - Se podría implementar si hay muchos datos */}
